@@ -12,8 +12,42 @@ import {
 } from "@/lib";
 
 // =====================================================
-// API FUNCTIONS
+// API FUNCTIONS WITH ERROR HANDLING
 // =====================================================
+
+/**
+ * Safe fetch wrapper with JSON validation
+ */
+async function safeFetch(url: string): Promise<Response> {
+  const response = await fetch(url);
+  
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+  
+  return response;
+}
+
+/**
+ * Safe JSON parse with validation
+ */
+async function safeJsonParse<T>(response: Response, context: string): Promise<T> {
+  const contentType = response.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    const text = await response.text();
+    console.error(`Expected JSON but got: ${contentType}`, text.substring(0, 200));
+    throw new Error(`Invalid response format from ${context}: Expected JSON but got ${contentType}`);
+  }
+  
+  try {
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    const text = await response.text();
+    console.error(`Failed to parse JSON from ${context}:`, text.substring(0, 200));
+    throw new Error(`Invalid JSON from ${context}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
 
 /**
  * Core Deck Management Functions
@@ -21,19 +55,42 @@ import {
 
 // Create a new shuffled deck
 export async function createNewDeck(deckCount: number = 1): Promise<Deck> {
-  const response = await fetch(
-    `${DECK_API_BASE_URL}/deck/new/shuffle/?deck_count=${deckCount}`
-  );
-  return await response.json();
+  try {
+    const response = await safeFetch(
+      `${DECK_API_BASE_URL}/deck/new/shuffle/?deck_count=${deckCount}`
+    );
+    return await safeJsonParse<Deck>(response, "createNewDeck");
+  } catch (error) {
+    console.error("Failed to create new deck:", error);
+    // Return a mock deck for offline mode
+    return {
+      success: false,
+      deck_id: `offline_deck_${Date.now()}`,
+      shuffled: true,
+      remaining: 52,
+    } as Deck;
+  }
 }
 
 // Create a brand new unshuffled deck
 export async function createBrandNewDeck(
   includeJokers: boolean = false
 ): Promise<Deck> {
-  const jokersParam = includeJokers ? "?jokers_enabled=true" : "";
-  const response = await fetch(`${DECK_API_BASE_URL}/deck/new/${jokersParam}`);
-  return await response.json();
+  try {
+    const jokersParam = includeJokers ? "?jokers_enabled=true" : "";
+    const response = await safeFetch(
+      `${DECK_API_BASE_URL}/deck/new/${jokersParam}`
+    );
+    return await safeJsonParse<Deck>(response, "createBrandNewDeck");
+  } catch (error) {
+    console.error("Failed to create brand new deck:", error);
+    return {
+      success: false,
+      deck_id: `offline_deck_${Date.now()}`,
+      shuffled: false,
+      remaining: includeJokers ? 54 : 52,
+    } as Deck;
+  }
 }
 
 // Create a partial deck with specific cards (useful for testing)
@@ -41,12 +98,22 @@ export async function createPartialDeck(
   cards: string[],
   shuffle: boolean = true
 ): Promise<Deck> {
-  const cardsParam = cards.join(",");
-  const endpoint = shuffle ? "shuffle" : "";
-  const response = await fetch(
-    `${DECK_API_BASE_URL}/deck/new/${endpoint}/?cards=${cardsParam}`
-  );
-  return await response.json();
+  try {
+    const cardsParam = cards.join(",");
+    const endpoint = shuffle ? "shuffle" : "";
+    const response = await safeFetch(
+      `${DECK_API_BASE_URL}/deck/new/${endpoint}/?cards=${cardsParam}`
+    );
+    return await safeJsonParse<Deck>(response, "createPartialDeck");
+  } catch (error) {
+    console.error("Failed to create partial deck:", error);
+    return {
+      success: false,
+      deck_id: `offline_deck_${Date.now()}`,
+      shuffled: shuffle,
+      remaining: cards.length,
+    } as Deck;
+  }
 }
 
 // Create a Tien Len specific deck (standard 52 cards, shuffled)
@@ -75,10 +142,34 @@ export async function drawCards(
   deckId: string,
   count: number = 1
 ): Promise<DrawResponse> {
-  const response = await fetch(
-    `${DECK_API_BASE_URL}/deck/${deckId}/draw/?count=${count}`
-  );
-  return await response.json();
+  try {
+    const response = await safeFetch(
+      `${DECK_API_BASE_URL}/deck/${deckId}/draw/?count=${count}`
+    );
+    return await safeJsonParse<DrawResponse>(response, "drawCards");
+  } catch (error) {
+    console.error("Failed to draw cards:", error);
+    // Return mock cards for offline mode
+    const mockCards: Card[] = [];
+    for (let i = 0; i < count; i++) {
+      mockCards.push({
+        code: `MOCK${i}`,
+        value: "ACE",
+        suit: "SPADES",
+        image: "https://deckofcardsapi.com/static/img/back.png",
+        images: {
+          svg: "https://deckofcardsapi.com/static/img/back.svg",
+          png: "https://deckofcardsapi.com/static/img/back.png",
+        },
+      });
+    }
+    return {
+      success: false,
+      deck_id: deckId,
+      cards: mockCards,
+      remaining: 52 - count,
+    } as DrawResponse;
+  }
 }
 
 // Draw cards and create new deck in one request
@@ -101,11 +192,25 @@ export async function addToPile(
   pileName: string,
   cards: string[]
 ): Promise<PileResponse> {
-  const cardsParam = cards.join(",");
-  const response = await fetch(
-    `${DECK_API_BASE_URL}/deck/${deckId}/pile/${pileName}/add/?cards=${cardsParam}`
-  );
-  return await response.json();
+  try {
+    const cardsParam = cards.join(",");
+    const response = await safeFetch(
+      `${DECK_API_BASE_URL}/deck/${deckId}/pile/${pileName}/add/?cards=${cardsParam}`
+    );
+    return await safeJsonParse<PileResponse>(response, "addToPile");
+  } catch (error) {
+    console.error(`Failed to add cards to pile ${pileName}:`, error);
+    return {
+      success: false,
+      deck_id: deckId,
+      remaining: 0,
+      piles: {
+        [pileName]: {
+          remaining: cards.length,
+        },
+      },
+    } as PileResponse;
+  }
 }
 
 // List cards in a pile
@@ -113,10 +218,25 @@ export async function listPile(
   deckId: string,
   pileName: string
 ): Promise<PileResponse> {
-  const response = await fetch(
-    `${DECK_API_BASE_URL}/deck/${deckId}/pile/${pileName}/list/`
-  );
-  return await response.json();
+  try {
+    const response = await safeFetch(
+      `${DECK_API_BASE_URL}/deck/${deckId}/pile/${pileName}/list/`
+    );
+    return await safeJsonParse<PileResponse>(response, "listPile");
+  } catch (error) {
+    console.error(`Failed to list pile ${pileName}:`, error);
+    return {
+      success: false,
+      deck_id: deckId,
+      remaining: 0,
+      piles: {
+        [pileName]: {
+          remaining: 0,
+          cards: [],
+        },
+      },
+    } as PileResponse;
+  }
 }
 
 // Shuffle cards in a pile
@@ -238,12 +358,12 @@ export async function findPlayerWithThreeOfSpades(deckId: string): Promise<{
     for (let i = 0; i < 4; i++) {
       const playerName = `player${i + 1}`;
       const cards = await getPlayerHand(deckId, playerName);
-      const hasThreeOfSpades = cards.some(card => card.code === "3S");
-      
+      const hasThreeOfSpades = cards.some((card) => card.code === "3S");
+
       if (hasThreeOfSpades) {
         return {
           playerIndex: i,
-          playerName: playerName
+          playerName: playerName,
         };
       }
     }
@@ -365,5 +485,193 @@ export async function safeApiCall<T>(
   } catch (error) {
     console.error("API call failed:", error);
     return null;
+  }
+}
+
+/**
+ * AI Game Functions
+ */
+
+// Make an AI move for a computer player
+export async function makeAIMove(
+  deckId: string,
+  playerName: string,
+  gameContext: {
+    lastPlayedCards: Card[];
+    lastPlayer?: string;
+    isFirstPlay: boolean;
+    mustIncludeThreeOfSpades: boolean;
+    playerCardCounts: number[];
+    currentPlayerIndex: number;
+  }
+): Promise<{
+  success: boolean;
+  action: "play" | "pass";
+  cards?: Card[];
+  reasoning: string;
+}> {
+  try {
+    // Get AI player's cards
+    const aiCards = await getPlayerHand(deckId, playerName);
+
+    // Import AI strategy (dynamic import to avoid potential circular dependencies)
+    const { makeAIDecision, getCombinationType } = await import(
+      "@/lib/utils/aiStrategy"
+    );
+    const { convertCardsToLocal } = await import("@/lib/utils/cards");
+
+    // Convert to local format for AI processing
+    const localCards = convertCardsToLocal(aiCards);
+    const localLastPlayed = convertCardsToLocal(gameContext.lastPlayedCards);
+
+    // Create AI context
+    const aiContext = {
+      playerCards: localCards,
+      lastPlayedCards: localLastPlayed,
+      lastPlayer: gameContext.lastPlayer,
+      isFirstPlay: gameContext.isFirstPlay,
+      mustIncludeThreeOfSpades: gameContext.mustIncludeThreeOfSpades,
+      remainingPlayers: 4, // Assuming 4 players
+      playerCardCounts: gameContext.playerCardCounts,
+      currentPlayerIndex: gameContext.currentPlayerIndex,
+    };
+
+    // Get AI decision
+    const decision = makeAIDecision(aiContext);
+
+    if (decision.shouldPlay && decision.cards.length > 0) {
+      // Play the selected cards
+      const cardCodes = decision.cards.map((card) => card.code);
+      const playResult = await playCardsToTable(deckId, playerName, cardCodes);
+
+      if (playResult.success) {
+        return {
+          success: true,
+          action: "play",
+          cards: playResult.cards,
+          reasoning: decision.reasoning,
+        };
+      } else {
+        return {
+          success: false,
+          action: "pass",
+          reasoning: "Failed to play cards, passing instead",
+        };
+      }
+    } else {
+      return {
+        success: true,
+        action: "pass",
+        reasoning: decision.reasoning,
+      };
+    }
+  } catch (error) {
+    console.error("Error making AI move:", error);
+    return {
+      success: false,
+      action: "pass",
+      reasoning: "AI error, passing turn",
+    };
+  }
+}
+
+// Get strategic card recommendation for human player (optional helper)
+export async function getCardRecommendation(
+  deckId: string,
+  playerName: string,
+  selectedCards: string[],
+  gameContext: {
+    lastPlayedCards: Card[];
+    lastPlayer?: string;
+    isFirstPlay: boolean;
+    mustIncludeThreeOfSpades: boolean;
+  }
+): Promise<{
+  isValidPlay: boolean;
+  recommendation: string;
+  confidence: number;
+}> {
+  try {
+    const playerCards = await getPlayerHand(deckId, playerName);
+    const { convertCardsToLocal } = await import("@/lib/utils/cards");
+    const { getCombinationType, canBeat, isValidCombination } = await import(
+      "@/lib/utils/aiStrategy"
+    );
+
+    const localCards = convertCardsToLocal(playerCards);
+    const selectedLocalCards = localCards.filter((card) =>
+      selectedCards.includes(card.code)
+    );
+
+    // Check if selection is a valid combination
+    const isValid = isValidCombination(selectedLocalCards);
+
+    if (!isValid) {
+      return {
+        isValidPlay: false,
+        recommendation: "Selected cards do not form a valid combination",
+        confidence: 1.0,
+      };
+    }
+
+    // Check if it's the first play and needs 3 of Spades
+    if (gameContext.isFirstPlay && gameContext.mustIncludeThreeOfSpades) {
+      const hasThreeOfSpades = selectedLocalCards.some(
+        (card) => card.code === "3S"
+      );
+      if (!hasThreeOfSpades) {
+        return {
+          isValidPlay: false,
+          recommendation: "Must include 3 of Spades in first play",
+          confidence: 1.0,
+        };
+      }
+    }
+
+    // If there are last played cards, check if we can beat them
+    if (gameContext.lastPlayedCards.length > 0) {
+      const localLastPlayed = convertCardsToLocal(gameContext.lastPlayedCards);
+      const targetCombo = getCombinationType(localLastPlayed);
+      const playerCombo = getCombinationType(selectedLocalCards);
+
+      if (!targetCombo || !playerCombo) {
+        return {
+          isValidPlay: false,
+          recommendation: "Cannot determine combination types",
+          confidence: 0.5,
+        };
+      }
+
+      const canBeatTarget = canBeat(playerCombo, targetCombo);
+
+      if (!canBeatTarget) {
+        return {
+          isValidPlay: false,
+          recommendation: `Your ${playerCombo.type} cannot beat the played ${targetCombo.type}`,
+          confidence: 1.0,
+        };
+      }
+
+      return {
+        isValidPlay: true,
+        recommendation: `Good play! Your ${playerCombo.type} beats the ${targetCombo.type}`,
+        confidence: 0.8,
+      };
+    }
+
+    return {
+      isValidPlay: true,
+      recommendation: `Valid ${
+        getCombinationType(selectedLocalCards)?.type || "play"
+      }`,
+      confidence: 0.7,
+    };
+  } catch (error) {
+    console.error("Error getting card recommendation:", error);
+    return {
+      isValidPlay: false,
+      recommendation: "Error analyzing play",
+      confidence: 0.0,
+    };
   }
 }
