@@ -1,102 +1,191 @@
-import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="bg-gradient-to-br min-h-screen table-felt">
+      {/* Hero Section */}
+      <main className="mx-auto px-4 py-16 container">
+        <div className="mb-16 text-center">
+          <h1 className="drop-shadow-2xl mb-4 font-bold font-serif text-6xl text-white">
+            🂡 Tiến Lên 🂮
+          </h1>
+          <p className="mx-auto mb-8 max-w-2xl text-green-100 text-xl">
+            The classic Vietnamese card game. Challenge your friends in this
+            strategic climbing game where the goal is to be the first to play
+            all your cards!
+          </p>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          <div className="flex flex-wrap justify-center gap-4 mb-12">
+            <Button variant="winner" size="lg" className="px-8 py-4 text-lg">
+              🎮 Start New Game
+            </Button>
+            <Button variant="dealer" size="lg" className="px-8 py-4 text-lg">
+              📖 Learn Rules
+            </Button>
+            <Button variant="card" size="lg" className="px-8 py-4 text-lg">
+              👥 Join Game
+            </Button>
+          </div>
+        </div>
+
+        {/* Sample Cards Display */}
+        <div className="mb-16">
+          <h2 className="mb-8 font-bold text-3xl text-center text-white">
+            Experience Premium Card Graphics
+          </h2>
+
+          {/* Bridge Size Cards */}
+          <div className="mb-8">
+            <Badge variant="dealer" className="mb-4 px-4 py-2 text-lg">
+              Bridge Size Cards
+            </Badge>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Card
+                variant="card-red"
+                size="bridge-size"
+                suit="hearts"
+                value="A"
+              />
+              <Card
+                variant="card-black"
+                size="bridge-size"
+                suit="spades"
+                value="K"
+              />
+              <Card
+                variant="card-red"
+                size="bridge-size"
+                suit="diamonds"
+                value="Q"
+              />
+              <Card
+                variant="card-black"
+                size="bridge-size"
+                suit="clubs"
+                value="J"
+              />
+              <Card variant="card-back" size="bridge-size" />
+            </div>
+          </div>
+
+          {/* Poker Size Cards */}
+          <div className="mb-8">
+            <Badge variant="poker-chip" className="mb-4 px-4 py-2 text-lg">
+              Poker Size Cards
+            </Badge>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Card
+                variant="card-red"
+                size="poker-size"
+                suit="hearts"
+                value="10"
+              />
+              <Card
+                variant="card-black"
+                size="poker-size"
+                suit="spades"
+                value="9"
+              />
+              <Card
+                variant="card-red"
+                size="poker-size"
+                suit="diamonds"
+                value="8"
+              />
+              <Card
+                variant="card-black"
+                size="poker-size"
+                suit="clubs"
+                value="7"
+              />
+              <Card
+                variant="card-selected"
+                size="poker-size"
+                suit="hearts"
+                value="3"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Game Features */}
+        <div className="gap-8 grid md:grid-cols-3 mb-16">
+          <div className="bg-white/10 backdrop-blur-sm p-6 border border-white/20 rounded-xl">
+            <div className="mb-4 text-4xl">🎯</div>
+            <h3 className="mb-2 font-bold text-white text-xl">
+              Strategic Gameplay
+            </h3>
+            <p className="text-green-100">
+              Master the art of card combinations and timing. Plan your moves
+              carefully to outsmart your opponents.
+            </p>
+          </div>
+
+          <div className="bg-white/10 backdrop-blur-sm p-6 border border-white/20 rounded-xl">
+            <div className="mb-4 text-4xl">👥</div>
+            <h3 className="mb-2 font-bold text-white text-xl">
+              Multiplayer Fun
+            </h3>
+            <p className="text-green-100">
+              Play with 2-4 players online or locally. Challenge friends or meet
+              new opponents from around the world.
+            </p>
+          </div>
+
+          <div className="bg-white/10 backdrop-blur-sm p-6 border border-white/20 rounded-xl">
+            <div className="mb-4 text-4xl">🏆</div>
+            <h3 className="mb-2 font-bold text-white text-xl">
+              Tournament Mode
+            </h3>
+            <p className="text-green-100">
+              Compete in ranked matches and tournaments. Climb the leaderboards
+              and earn exclusive rewards.
+            </p>
+          </div>
+        </div>
+
+        {/* Game Statistics */}
+        <div className="text-center">
+          <h2 className="mb-8 font-bold text-3xl text-white">
+            Game Statistics
+          </h2>
+          <div className="flex flex-wrap justify-center gap-6">
+            <Badge variant="chip-red" className="px-6 py-3 text-lg">
+              🎮 1,247+ Games Played
+            </Badge>
+            <Badge variant="chip-blue" className="px-6 py-3 text-lg">
+              👥 328+ Active Players
+            </Badge>
+            <Badge variant="chip-green" className="px-6 py-3 text-lg">
+              🏆 89+ Tournaments
+            </Badge>
+            <Badge variant="winner" className="px-6 py-3 text-lg">
+              ⭐ 4.8/5 Rating
+            </Badge>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="bg-black/20 backdrop-blur-sm py-8 border-white/20 border-t">
+        <div className="mx-auto px-4 text-center container">
+          <p className="mb-4 text-green-100">
+            Experience the most authentic Vietnamese card game online
+          </p>
+          <div className="flex flex-wrap justify-center gap-6">
+            <Button variant="outline" size="sm">
+              🎲 Other Games
+            </Button>
+            <Button variant="outline" size="sm">
+              📱 Mobile App
+            </Button>
+            <Button variant="outline" size="sm">
+              💬 Support
+            </Button>
+          </div>
+        </div>
       </footer>
     </div>
   );
