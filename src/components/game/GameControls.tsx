@@ -25,22 +25,17 @@ export function GameControls({
   isCurrentPlayer,
   className,
 }: GameControlsProps) {
-  if (!isCurrentPlayer) {
-    return (
-      <div
-        className={cn(
-          "flex justify-center items-center bg-muted p-4",
-          className
-        )}
-      >
-        <div className="text-6xl text-white">Waiting for other players...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="bottom-0 left-1/2 absolute border w-full h-[20em] transform -translate-x-1/2">
       <div className={cn("flex flex-col gap-4 p-4 rounded-lg", className)}>
+        {!isCurrentPlayer && (
+          <div className="text-center">
+            <div className="mb-2 text-2xl text-white">
+              Waiting for other players...
+            </div>
+          </div>
+        )}
+
         {/* Selected cards info */}
         {selectedCards.length > 0 && (
           <div className="text-center">
