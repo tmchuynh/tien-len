@@ -1,0 +1,111 @@
+"use client";
+
+import { LocalCard } from "@/lib/interfaces/cards";
+import { cn } from "@/lib/utils";
+import { PlayingCard } from "./PlayingCard";
+
+interface PlayerHandProps {
+  cards: LocalCard[];
+  selectedCards: LocalCard[];
+  onCardClick: (card: LocalCard) => void;
+  onCardMove?: (fromIndex: number, toIndex: number) => void;
+  isCurrentPlayer?: boolean;
+  position: "bottom" | "top" | "left" | "right";
+  playerName: string;
+  cardCount?: number; // For other players where we only show count
+  className?: string;
+}
+
+export function PlayerHand({
+  cards,
+  selectedCards,
+  onCardClick,
+  isCurrentPlayer = false,
+  position,
+  playerName,
+  cardCount,
+  className,
+}: PlayerHandProps) {
+  const isOwnCards = position === "bottom";
+  const displayCards = isOwnCards ? cards : [];
+  const showCardBacks = !isOwnCards && cardCount !== undefined;
+
+  const getPositionClasses = () => {
+    switch (position) {
+      case "bottom":
+        return "flex-row justify-center";
+      case "top":
+        return "flex-row justify-center";
+      case "left":
+        return "flex-col items-center";
+      case "right":
+        return "flex-col items-center";
+      default:
+        return "flex-row justify-center";
+    }
+  };
+
+  const getCardSpacing = () => {
+    if (position === "left" || position === "right") {
+      return "-space-y-12";
+    }
+    return "-space-x-8";
+  };
+
+  return (
+    <div className={cn("flex flex-col items-center gap-2", className)}>
+      {/* Player name and card count */}
+      <div className="flex items-center gap-2">
+        <span
+          className={cn(
+            "font-semibold text-sm px-2 py-1 rounded",
+            isCurrentPlayer
+              ? "bg-blue-100 text-blue-800"
+              : "bg-gray-100 text-gray-700"
+          )}
+        >
+          {playerName}
+        </span>
+        {!isOwnCards && (
+          <span className="text-gray-500 text-xs">{cardCount} cards</span>
+        )}
+      </div>
+
+      {/* Cards */}
+      <div className={cn("flex", getPositionClasses(), getCardSpacing())}>
+        {isOwnCards
+          ? // Show actual cards for current player
+            displayCards.map((card, index) => {
+              const isSelected = selectedCards.some(
+                (selectedCard) => selectedCard.code === card.code
+              );
+              return (
+                <PlayingCard
+                  key={`${card.code}-${index}`}
+                  card={card}
+                  isSelected={isSelected}
+                  onClick={() => onCardClick(card)}
+                  size="medium"
+                  className="transition-all duration-200"
+                />
+              );
+            })
+          : showCardBacks
+          ? // Show card backs for other players
+            Array.from({ length: cardCount! }).map((_, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "w-16 h-24 bg-blue-600 border-2 border-blue-700 rounded-lg shadow-md",
+                  "bg-gradient-to-br from-blue-500 to-blue-700",
+                  "flex items-center justify-center text-white text-xs font-bold"
+                )}
+              >
+                🃏
+              </div>
+            ))
+          : null}
+      </div>
+    </div>
+  );
+}
