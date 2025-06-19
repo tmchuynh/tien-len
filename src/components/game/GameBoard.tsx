@@ -3,6 +3,7 @@
 import {
   createTienLenDeck,
   dealTienLenHands,
+  findPlayerWithThreeOfSpades,
   getPlayerHand,
   playCardsToTable,
 } from "@/api/cards";
@@ -70,6 +71,9 @@ export function GameBoard({ className }: GameBoardProps) {
   const [deckId, setDeckId] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [isFirstPlay, setIsFirstPlay] = useState<boolean>(true);
+  const [mustPlayThreeOfSpades, setMustPlayThreeOfSpades] =
+    useState<boolean>(false);
 
   const currentPlayer = players[currentPlayerIndex];
   const isCurrentPlayerActive = currentPlayer?.id === "player1";
@@ -78,49 +82,59 @@ export function GameBoard({ className }: GameBoardProps) {
   const initializeGame = async () => {
     setIsLoading(true);
     setError("");
-    
+
     try {
       // Create a new shuffled Tien Len deck
       const deck = await createTienLenDeck();
-      
+
       if (!deck.success) {
         throw new Error("Failed to create deck");
       }
-      
+
       setDeckId(deck.deck_id);
-      
+
       // Deal cards to all players
       const dealResult = await dealTienLenHands(deck.deck_id, 4);
-      
+
       if (!dealResult.success) {
         throw new Error("Failed to deal cards");
       }
-      
+
       // Get current player's cards
       const playerCards = await getPlayerHand(deck.deck_id, "player1");
       const localCards = convertCardsToLocal(playerCards);
-      
+
       // Update players with card counts and current player's actual cards
       const updatedPlayers = players.map((player, index) => {
         const playerKey = `player${index + 1}`;
         const handData = dealResult.hands[playerKey];
-        
+
         return {
           ...player,
           cardCount: handData?.cards?.length || 13,
           cards: player.id === "player1" ? localCards : undefined,
         };
       });
-      
+
       setPlayers(updatedPlayers);
       setGamePhase("playing");
-      
+
       // Find player with 3 of Spades to start
-      const hasThreeOfSpades = localCards.some(card => card.code === "3S");
-      if (hasThreeOfSpades) {
-        setCurrentPlayerIndex(0); // Current player starts
+      const playerWithThreeOfSpades = await findPlayerWithThreeOfSpades(
+        deck.deck_id
+      );
+
+      if (playerWithThreeOfSpades) {
+        setCurrentPlayerIndex(playerWithThreeOfSpades.playerIndex);
+
+        // If the current user (player1) has the 3 of spades, they must play it
+        if (playerWithThreeOfSpades.playerIndex === 0) {
+          setMustPlayThreeOfSpades(true);
+        }
+      } else {
+        // Fallback to player 1 if not found
+        setCurrentPlayerIndex(0);
       }
-      
     } catch (error) {
       console.error("Error initializing game:", error);
       setError("Failed to initialize game. Please try again.");
@@ -138,6 +152,8 @@ export function GameBoard({ className }: GameBoardProps) {
     setGamePhase("waiting");
     setCurrentPlayerIndex(0);
     setDeckId("");
+    setIsFirstPlay(true);
+    setMustPlayThreeOfSpades(false);
     await initializeGame();
   };
 
@@ -162,9 +178,18 @@ export function GameBoard({ className }: GameBoardProps) {
   const handlePlay = async () => {
     if (!isCurrentPlayerActive || selectedCards.length === 0 || !deckId) return;
 
+    // Check if it's the first play and 3 of Spades is required
+    if (isFirstPlay && mustPlayThreeOfSpades) {
+      const hasThreeOfSpades = selectedCards.some((card) => card.code === "3S");
+      if (!hasThreeOfSpades) {
+        setError("You must play the 3 of Spades on the first turn!");
+        return;
+      }
+    }
+
     try {
       // Play cards to table via API
-      const cardCodes = selectedCards.map(card => card.code);
+      const cardCodes = selectedCards.map((card) => card.code);
       await playCardsToTable(deckId, "player1", cardCodes);
 
       // Move selected cards to center (for UI)
@@ -193,6 +218,12 @@ export function GameBoard({ className }: GameBoardProps) {
 
       // Clear selection
       setSelectedCards([]);
+
+      // Mark first play as complete
+      if (isFirstPlay) {
+        setIsFirstPlay(false);
+        setMustPlayThreeOfSpades(false);
+      }
 
       // Move to next player
       setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
@@ -281,7 +312,12 @@ export function GameBoard({ className }: GameBoardProps) {
   // Show loading or error states
   if (isLoading) {
     return (
-      <div className={cn("w-full h-screen table-felt relative overflow-hidden flex items-center justify-center", className)}>
+      <div
+        className={cn(
+          "w-full h-screen table-felt relative overflow-hidden flex items-center justify-center",
+          className
+        )}
+      >
         <div className="bg-white shadow-lg p-8 rounded-lg text-center">
           <div className="mb-4 text-2xl">🃏</div>
           <div className="mb-2 font-semibold text-lg">Shuffling Deck...</div>
@@ -293,12 +329,17 @@ export function GameBoard({ className }: GameBoardProps) {
 
   if (error) {
     return (
-      <div className={cn("w-full h-screen table-felt relative overflow-hidden flex items-center justify-center", className)}>
+      <div
+        className={cn(
+          "w-full h-screen table-felt relative overflow-hidden flex items-center justify-center",
+          className
+        )}
+      >
         <div className="bg-white shadow-lg p-8 rounded-lg text-center">
           <div className="mb-4 text-2xl">❌</div>
           <div className="mb-2 font-semibold text-lg text-red-600">Error</div>
           <div className="mb-4 text-gray-600 text-sm">{error}</div>
-          <button 
+          <button
             onClick={startNewGame}
             className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded text-white"
           >
@@ -381,9 +422,12 @@ export function GameBoard({ className }: GameBoardProps) {
           selectedCards={selectedCards}
           onCardClick={handleCardClick}
           onCardMove={handleCardMove}
+          onSortByValue={handleSortByValue}
+          onSortBySuit={handleSortBySuit}
           isCurrentPlayer={isCurrentPlayerActive}
           position="bottom"
           playerName={currentPlayer?.name || "You"}
+          mustPlayThreeOfSpades={mustPlayThreeOfSpades}
         />
       </div>
 
@@ -393,8 +437,6 @@ export function GameBoard({ className }: GameBoardProps) {
         onPlay={handlePlay}
         onPass={handlePass}
         onClearSelection={handleClearSelection}
-        onSortByValue={handleSortByValue}
-        onSortBySuit={handleSortBySuit}
         canPlay={canPlay}
         canPass={canPass}
         isCurrentPlayer={isCurrentPlayerActive}
