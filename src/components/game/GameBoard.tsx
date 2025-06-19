@@ -182,7 +182,7 @@ export function GameBoard({ className }: GameBoardProps) {
     if (isFirstPlay && mustPlayThreeOfSpades) {
       const hasThreeOfSpades = selectedCards.some((card) => card.code === "3S");
       if (!hasThreeOfSpades) {
-        setError("You must play the 3 of Spades on the first turn!");
+        setError("You must include the 3 of Spades in your first play!");
         return;
       }
     }
