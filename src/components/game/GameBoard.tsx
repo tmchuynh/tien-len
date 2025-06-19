@@ -2,6 +2,11 @@
 
 import { LocalCard } from "@/lib/interfaces/cards";
 import { cn } from "@/lib/utils";
+import {
+  moveCard,
+  sortCardsBySuit,
+  sortCardsByValue,
+} from "@/lib/utils/cardSorting";
 import { useEffect, useState } from "react";
 import { GameControls } from "./GameControls";
 import { GameStatus } from "./GameStatus";
@@ -144,6 +149,51 @@ export function GameBoard({ className }: GameBoardProps) {
     setSelectedCards([]);
   };
 
+  const handleSortByValue = () => {
+    if (!isCurrentPlayerActive) return;
+    setPlayers((prev) =>
+      prev.map((player) => {
+        if (player.id === "player1" && player.cards) {
+          return {
+            ...player,
+            cards: sortCardsByValue(player.cards),
+          };
+        }
+        return player;
+      })
+    );
+  };
+
+  const handleSortBySuit = () => {
+    if (!isCurrentPlayerActive) return;
+    setPlayers((prev) =>
+      prev.map((player) => {
+        if (player.id === "player1" && player.cards) {
+          return {
+            ...player,
+            cards: sortCardsBySuit(player.cards),
+          };
+        }
+        return player;
+      })
+    );
+  };
+
+  const handleCardMove = (fromIndex: number, toIndex: number) => {
+    if (!isCurrentPlayerActive) return;
+    setPlayers((prev) =>
+      prev.map((player) => {
+        if (player.id === "player1" && player.cards) {
+          return {
+            ...player,
+            cards: moveCard(player.cards, fromIndex, toIndex),
+          };
+        }
+        return player;
+      })
+    );
+  };
+
   // Check for game end
   useEffect(() => {
     const winner = players.find((player) => player.hasFinished);
@@ -242,6 +292,7 @@ export function GameBoard({ className }: GameBoardProps) {
           cards={currentPlayer?.cards || []}
           selectedCards={selectedCards}
           onCardClick={handleCardClick}
+          onCardMove={handleCardMove}
           isCurrentPlayer={isCurrentPlayerActive}
           position="bottom"
           playerName={currentPlayer?.name || "You"}
@@ -255,6 +306,8 @@ export function GameBoard({ className }: GameBoardProps) {
           onPlay={handlePlay}
           onPass={handlePass}
           onClearSelection={handleClearSelection}
+          onSortByValue={handleSortByValue}
+          onSortBySuit={handleSortBySuit}
           canPlay={canPlay}
           canPass={canPass}
           isCurrentPlayer={isCurrentPlayerActive}
