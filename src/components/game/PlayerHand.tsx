@@ -39,6 +39,16 @@ export function PlayerHand({
   const displayCards = isOwnCards ? cards : [];
   const showCardBacks = !isOwnCards && cardCount !== undefined;
 
+  // Debug logging for user's cards
+  if (isOwnCards) {
+    console.log("🃏 PlayerHand rendering for user:", {
+      cardsCount: cards.length,
+      selectedCount: selectedCards.length,
+      hasOnCardClick: !!onCardClick,
+      cards: cards.map(c => c.code)
+    });
+  }
+
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, index: number) => {
     if (!isOwnCards || !onCardMove) return;
