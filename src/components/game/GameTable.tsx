@@ -22,7 +22,7 @@ export function GameTable({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-4 p-8",
+        "flex flex-col items-center justify-center  gap-4 p-8",
         className
       )}
     >
