@@ -91,7 +91,7 @@ export function PlayerHand({
           {playerName}
         </span>
         {!isOwnCards && (
-          <span className="text-gray-500 text-xs">{cardCount} cards</span>
+          <span className="text-white text-xs">{cardCount} cards</span>
         )}
       </div>
 
