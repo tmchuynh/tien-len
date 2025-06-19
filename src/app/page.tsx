@@ -1,8 +1,12 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
   return (
     <div className="bg-gradient-to-br min-h-screen table-felt">
       {/* Hero Section */}
@@ -18,14 +22,29 @@ export default function Home() {
           </p>
 
           <div className="flex flex-wrap justify-center gap-4 mb-12">
-            <Button variant="winner" size="lg" className="px-8 py-4 text-lg">
+            <Button
+              variant="winner"
+              size="lg"
+              className="px-8 py-4 text-lg"
+              onClick={() => router.push("/game")}
+            >
               🎮 Start New Game
             </Button>
-            <Button variant="dealer" size="lg" className="px-8 py-4 text-lg">
+            <Button
+              variant="dealer"
+              size="lg"
+              className="px-8 py-4 text-lg"
+              onClick={() => router.push("/how-to-play")}
+            >
               📖 Learn Rules
             </Button>
-            <Button variant="card" size="lg" className="px-8 py-4 text-lg">
-              👥 Join Game
+            <Button
+              variant="card"
+              size="lg"
+              className="px-8 py-4 text-lg"
+              onClick={() => router.push("/glossary")}
+            >
+              🔠 Glossary
             </Button>
           </div>
         </div>
