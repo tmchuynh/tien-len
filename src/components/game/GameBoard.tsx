@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  createTienLenDeck,
+  dealTienLenHands,
+  getPlayerHand,
+  playCardsToTable,
+} from "@/api/cards";
 import { LocalCard } from "@/lib/interfaces/cards";
 import { Player } from "@/lib/interfaces/player";
 import { cn } from "@/lib/utils";
@@ -9,12 +15,6 @@ import {
   sortCardsByValue,
 } from "@/lib/utils/cardSorting";
 import { convertCardsToLocal } from "@/lib/utils/cards";
-import { 
-  createTienLenDeck, 
-  dealTienLenHands, 
-  getPlayerHand,
-  playCardsToTable 
-} from "@/api/cards";
 import { useEffect, useState } from "react";
 import { GameControls } from "./GameControls";
 import { GameStatus } from "./GameStatus";
@@ -282,10 +282,10 @@ export function GameBoard({ className }: GameBoardProps) {
   if (isLoading) {
     return (
       <div className={cn("w-full h-screen table-felt relative overflow-hidden flex items-center justify-center", className)}>
-        <div className="bg-white rounded-lg p-8 text-center shadow-lg">
-          <div className="text-2xl mb-4">🃏</div>
-          <div className="text-lg font-semibold mb-2">Shuffling Deck...</div>
-          <div className="text-sm text-gray-600">Dealing cards to players</div>
+        <div className="bg-white shadow-lg p-8 rounded-lg text-center">
+          <div className="mb-4 text-2xl">🃏</div>
+          <div className="mb-2 font-semibold text-lg">Shuffling Deck...</div>
+          <div className="text-gray-600 text-sm">Dealing cards to players</div>
         </div>
       </div>
     );
@@ -294,13 +294,13 @@ export function GameBoard({ className }: GameBoardProps) {
   if (error) {
     return (
       <div className={cn("w-full h-screen table-felt relative overflow-hidden flex items-center justify-center", className)}>
-        <div className="bg-white rounded-lg p-8 text-center shadow-lg">
-          <div className="text-2xl mb-4">❌</div>
-          <div className="text-lg font-semibold mb-2 text-red-600">Error</div>
-          <div className="text-sm text-gray-600 mb-4">{error}</div>
+        <div className="bg-white shadow-lg p-8 rounded-lg text-center">
+          <div className="mb-4 text-2xl">❌</div>
+          <div className="mb-2 font-semibold text-lg text-red-600">Error</div>
+          <div className="mb-4 text-gray-600 text-sm">{error}</div>
           <button 
             onClick={startNewGame}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded text-white"
           >
             Try Again
           </button>
