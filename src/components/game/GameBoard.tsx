@@ -83,29 +83,38 @@ export function GameBoard({ className }: GameBoardProps) {
 
   // Initialize deck and deal cards
   const initializeGame = async () => {
+    console.log("initializeGame started");
     setIsLoading(true);
     setError("");
 
     try {
       // Create a new shuffled Tien Len deck
+      console.log("Creating deck...");
       const deck = await createTienLenDeck();
+      console.log("Deck created:", deck);
 
       if (!deck.success) {
         throw new Error("Failed to create deck");
       }
 
       setDeckId(deck.deck_id);
+      console.log("Deck ID set:", deck.deck_id);
 
       // Deal cards to all players
+      console.log("Dealing cards...");
       const dealResult = await dealTienLenHands(deck.deck_id, 4);
+      console.log("Deal result:", dealResult);
 
       if (!dealResult.success) {
         throw new Error("Failed to deal cards");
       }
 
       // Get current player's cards
+      console.log("Getting player cards...");
       const playerCards = await getPlayerHand(deck.deck_id, "player1");
+      console.log("Player cards received:", playerCards);
       const localCards = convertCardsToLocal(playerCards);
+      console.log("Local cards converted:", localCards);
 
       // Update players with card counts and current player's actual cards
       const updatedPlayers = players.map((player, index) => {
@@ -162,18 +171,25 @@ export function GameBoard({ className }: GameBoardProps) {
 
   // Initialize game on component mount
   useEffect(() => {
+    console.log("useEffect triggered - calling initializeGame");
     initializeGame();
   }, []);
 
   const handleCardClick = (card: LocalCard) => {
+    console.log("handleCardClick called - card:", card.code);
+    console.log("handleCardClick - gamePhase:", gamePhase);
+    console.log("handleCardClick - isCurrentPlayerActive:", isCurrentPlayerActive);
+    console.log("handleCardClick - selectedCards before:", selectedCards);
+    
     // Always allow card selection for organization, regardless of turn
     setSelectedCards((prev) => {
       const isAlreadySelected = prev.some((c) => c.code === card.code);
-      if (isAlreadySelected) {
-        return prev.filter((c) => c.code !== card.code);
-      } else {
-        return [...prev, card];
-      }
+      const newSelection = isAlreadySelected 
+        ? prev.filter((c) => c.code !== card.code)
+        : [...prev, card];
+      
+      console.log("handleCardClick - selectedCards after:", newSelection);
+      return newSelection;
     });
   };
 
@@ -407,6 +423,12 @@ export function GameBoard({ className }: GameBoardProps) {
 
   const canPlay = selectedCards.length > 0 && isCurrentPlayerActive;
   const canPass = isCurrentPlayerActive;
+
+  // Debug logging
+  console.log("GameBoard render - cards for user:", players[0]?.cards?.length);
+  console.log("GameBoard render - selectedCards:", selectedCards.length);
+  console.log("GameBoard render - gamePhase:", gamePhase);
+  console.log("GameBoard render - isCurrentPlayerActive:", isCurrentPlayerActive);
 
   // Show loading or error states
   if (isLoading) {
