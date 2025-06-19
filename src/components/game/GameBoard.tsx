@@ -218,7 +218,7 @@ export function GameBoard({ className }: GameBoardProps) {
   return (
     <div
       className={cn(
-        "w-full h-screen bg-green-100 relative overflow-hidden",
+        "w-full h-screen table-felt relative overflow-hidden",
         className
       )}
     >
