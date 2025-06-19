@@ -33,9 +33,7 @@ export function GameControls({
           className
         )}
       >
-        <div className="z-10 text-6xl text-white">
-          Waiting for other players...
-        </div>
+        <div className="text-6xl text-white">Waiting for other players...</div>
       </div>
     );
   }
