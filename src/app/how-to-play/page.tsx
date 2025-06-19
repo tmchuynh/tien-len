@@ -606,7 +606,7 @@ export default function HowToPlay() {
 
         {/* Action Buttons */}
         <div className="flex flex-wrap justify-center gap-4 mt-8">
-          <Link href="/play">
+          <Link href="/game">
             <Button variant="winner" size="lg" className="px-8 py-4 text-lg">
               🎮 Start Playing Now
             </Button>
