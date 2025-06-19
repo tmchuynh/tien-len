@@ -64,9 +64,12 @@ const mockLastPlayedCards: LocalCard[] = [];
 export function GameBoard({ className }: GameBoardProps) {
   const [players, setPlayers] = useState<Player[]>(createInitialPlayers());
   const [selectedCards, setSelectedCards] = useState<LocalCard[]>([]);
-  const [lastPlayedCards, setLastPlayedCards] = useState<LocalCard[]>(mockLastPlayedCards);
+  const [lastPlayedCards, setLastPlayedCards] =
+    useState<LocalCard[]>(mockLastPlayedCards);
   const [lastPlayer, setLastPlayer] = useState<string>("");
-  const [gamePhase, setGamePhase] = useState<"waiting" | "playing" | "finished">("waiting");
+  const [gamePhase, setGamePhase] = useState<
+    "waiting" | "playing" | "finished"
+  >("waiting");
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [deckId, setDeckId] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -163,8 +166,7 @@ export function GameBoard({ className }: GameBoardProps) {
   }, []);
 
   const handleCardClick = (card: LocalCard) => {
-    if (!isCurrentPlayerActive) return;
-
+    // Always allow card selection for organization, regardless of turn
     setSelectedCards((prev) => {
       const isAlreadySelected = prev.some((c) => c.code === card.code);
       if (isAlreadySelected) {
@@ -244,7 +246,7 @@ export function GameBoard({ className }: GameBoardProps) {
   };
 
   const handleSortByValue = () => {
-    if (!isCurrentPlayerActive) return;
+    // Allow sorting at any time for card organization
     setPlayers((prev) =>
       prev.map((player) => {
         if (player.id === "player1" && player.cards) {
@@ -259,7 +261,7 @@ export function GameBoard({ className }: GameBoardProps) {
   };
 
   const handleSortBySuit = () => {
-    if (!isCurrentPlayerActive) return;
+    // Allow sorting at any time for card organization
     setPlayers((prev) =>
       prev.map((player) => {
         if (player.id === "player1" && player.cards) {
@@ -274,7 +276,7 @@ export function GameBoard({ className }: GameBoardProps) {
   };
 
   const handleCardMove = (fromIndex: number, toIndex: number) => {
-    if (!isCurrentPlayerActive) return;
+    // Allow drag-and-drop organization at any time
     setPlayers((prev) =>
       prev.map((player) => {
         if (player.id === "player1" && player.cards) {
@@ -287,6 +289,103 @@ export function GameBoard({ className }: GameBoardProps) {
       })
     );
   };
+
+  // AI logic for computer players
+  const handleAITurn = async () => {
+    if (isCurrentPlayerActive || !currentPlayer || gamePhase !== "playing")
+      return;
+
+    // Simulate AI thinking time
+    setTimeout(async () => {
+      try {
+        // Get AI player's cards
+        const aiCards = await getPlayerHand(
+          deckId,
+          `player${currentPlayerIndex + 1}`
+        );
+
+        if (aiCards.length === 0) {
+          // AI has no cards, skip turn
+          setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
+          return;
+        }
+
+        let cardsToPlay: string[] = [];
+
+        // AI logic for first play (must include 3 of Spades)
+        if (isFirstPlay) {
+          const hasThreeOfSpades = aiCards.some((card) => card.code === "3S");
+          if (hasThreeOfSpades) {
+            // Play 3 of Spades with lowest other card if possible
+            cardsToPlay = ["3S"];
+            const otherCards = aiCards.filter((card) => card.code !== "3S");
+            if (otherCards.length > 0) {
+              // Add the lowest card to make a pair or just play together
+              cardsToPlay.push(otherCards[0].code);
+            }
+          }
+        } else {
+          // Normal AI play - just play the lowest card for simplicity
+          cardsToPlay = [aiCards[0].code];
+        }
+
+        if (cardsToPlay.length > 0) {
+          // Play cards to table via API
+          await playCardsToTable(
+            deckId,
+            `player${currentPlayerIndex + 1}`,
+            cardsToPlay
+          );
+
+          // Update last played cards for UI
+          const playedCards = cardsToPlay
+            .map((code) => {
+              const card = aiCards.find((c) => c.code === code);
+              return card ? convertCardsToLocal([card])[0] : null;
+            })
+            .filter(Boolean) as LocalCard[];
+
+          setLastPlayedCards(playedCards);
+          setLastPlayer(currentPlayer.name);
+
+          // Update AI player's card count
+          setPlayers((prev) =>
+            prev.map((player, index) => {
+              if (index === currentPlayerIndex) {
+                const newCardCount = player.cardCount - cardsToPlay.length;
+                return {
+                  ...player,
+                  cardCount: newCardCount,
+                  hasFinished: newCardCount === 0,
+                };
+              }
+              return player;
+            })
+          );
+
+          // Mark first play as complete
+          if (isFirstPlay) {
+            setIsFirstPlay(false);
+            setMustPlayThreeOfSpades(false);
+          }
+        }
+
+        // Move to next player
+        setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
+      } catch (error) {
+        console.error("AI turn error:", error);
+        // Skip AI turn on error
+        setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
+      }
+    }, 1000 + Math.random() * 2000); // Random delay between 1-3 seconds
+  };
+
+  // Trigger AI turns
+  useEffect(() => {
+    if (!isCurrentPlayerActive && gamePhase === "playing" && currentPlayer) {
+      handleAITurn();
+    }
+  }, [currentPlayerIndex, gamePhase, isCurrentPlayerActive]);
 
   // Check for game end
   useEffect(() => {
@@ -415,10 +514,10 @@ export function GameBoard({ className }: GameBoardProps) {
         />
       </div>
 
-      {/* Bottom player (current player) */}
+      {/* Bottom player (user player) */}
       <div className="bottom-20 left-1/2 absolute transform -translate-x-1/2">
         <PlayerHand
-          cards={currentPlayer?.cards || []}
+          cards={players[0]?.cards || []}
           selectedCards={selectedCards}
           onCardClick={handleCardClick}
           onCardMove={handleCardMove}
@@ -426,7 +525,7 @@ export function GameBoard({ className }: GameBoardProps) {
           onSortBySuit={handleSortBySuit}
           isCurrentPlayer={isCurrentPlayerActive}
           position="bottom"
-          playerName={currentPlayer?.name || "You"}
+          playerName={players[0]?.name || "You"}
           mustPlayThreeOfSpades={mustPlayThreeOfSpades}
         />
       </div>
