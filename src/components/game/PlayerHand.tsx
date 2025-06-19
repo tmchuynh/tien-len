@@ -114,51 +114,30 @@ export function PlayerHand({
               const shouldHighlight = mustPlayThreeOfSpades && isThreeOfSpades;
 
               return (
-                <div key={`${card.code}-${index}`}>
-                  <div
-                    draggable={!!onCardMove}
-                    onDragStart={(e) => handleDragStart(e, index)}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, index)}
-                    className="relative"
-                  >
-                    <PlayingCard
-                      card={card}
-                      isSelected={isSelected}
-                      isHighlighted={shouldHighlight}
-                      onClick={() => onCardClick(card)}
-                      size="medium"
-                      className={cn(
-                        "transition-all duration-200",
-                        onCardMove && "cursor-move hover:shadow-lg"
-                      )}
-                    />
-                    {shouldHighlight && (
-                      <div className="-top-15 left-1/2 absolute bg-yellow-400 px-2 py-1 rounded-full font-bold text-black text-xs transform -translate-x-1/2 animate-bounce">
-                        INCLUDE ME!
-                      </div>
+                <div
+                  key={`${card.code}-${index}`}
+                  draggable={!!onCardMove}
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, index)}
+                  className="relative"
+                >
+                  <PlayingCard
+                    card={card}
+                    isSelected={isSelected}
+                    isHighlighted={shouldHighlight}
+                    onClick={() => onCardClick(card)}
+                    size="medium"
+                    className={cn(
+                      "transition-all duration-200",
+                      onCardMove && "cursor-move hover:shadow-lg"
                     )}
-                  </div>
-
-                  {/* Sorting buttons */}
-                  <div className="-right-25 -bottom-17 absolute flex flex-col justify-center gap-2 -translate-y-20">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={onSortByValue}
-                      className="px-3 text-xs"
-                    >
-                      Sort by Value
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={onSortBySuit}
-                      className="px-3 text-xs"
-                    >
-                      Sort by Suit
-                    </Button>
-                  </div>
+                  />
+                  {shouldHighlight && (
+                    <div className="-top-15 left-1/2 absolute bg-yellow-400 px-2 py-1 rounded-full font-bold text-black text-xs transform -translate-x-1/2 animate-bounce">
+                      INCLUDE ME!
+                    </div>
+                  )}
                 </div>
               );
             })
@@ -178,6 +157,28 @@ export function PlayerHand({
             ))
           : null}
       </div>
+
+      {/* Sorting buttons - only show for user's cards */}
+      {isOwnCards && onSortByValue && onSortBySuit && (
+        <div className="flex gap-2 mt-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onSortByValue}
+            className="px-3 text-xs"
+          >
+            Sort by Value
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onSortBySuit}
+            className="px-3 text-xs"
+          >
+            Sort by Suit
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
