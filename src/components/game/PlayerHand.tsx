@@ -2,6 +2,7 @@
 
 import { LocalCard } from "@/lib/interfaces/cards";
 import { cn } from "@/lib/utils";
+import React from "react";
 import { PlayingCard } from "./PlayingCard";
 
 interface PlayerHandProps {
@@ -20,6 +21,7 @@ export function PlayerHand({
   cards,
   selectedCards,
   onCardClick,
+  onCardMove,
   isCurrentPlayer = false,
   position,
   playerName,
@@ -29,6 +31,28 @@ export function PlayerHand({
   const isOwnCards = position === "bottom";
   const displayCards = isOwnCards ? cards : [];
   const showCardBacks = !isOwnCards && cardCount !== undefined;
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    if (!isOwnCards || !onCardMove) return;
+    e.dataTransfer.setData("text/plain", index.toString());
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!isOwnCards || !onCardMove) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    if (!isOwnCards || !onCardMove) return;
+    e.preventDefault();
+    const dragIndex = parseInt(e.dataTransfer.getData("text/plain"));
+    if (dragIndex !== dropIndex) {
+      onCardMove(dragIndex, dropIndex);
+    }
+  };
 
   const getPositionClasses = () => {
     switch (position) {
@@ -80,14 +104,25 @@ export function PlayerHand({
                 (selectedCard) => selectedCard.code === card.code
               );
               return (
-                <PlayingCard
+                <div
                   key={`${card.code}-${index}`}
-                  card={card}
-                  isSelected={isSelected}
-                  onClick={() => onCardClick(card)}
-                  size="medium"
-                  className="transition-all duration-200"
-                />
+                  draggable={!!onCardMove}
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, index)}
+                  className="relative"
+                >
+                  <PlayingCard
+                    card={card}
+                    isSelected={isSelected}
+                    onClick={() => onCardClick(card)}
+                    size="medium"
+                    className={cn(
+                      "transition-all duration-200",
+                      onCardMove && "cursor-move hover:shadow-lg"
+                    )}
+                  />
+                </div>
               );
             })
           : showCardBacks
