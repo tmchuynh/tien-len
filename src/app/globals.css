@@ -81,7 +81,7 @@
 
   /* Card table green background */
   --background: oklch(0.25 0.08 152);
-  --foreground: oklch(0.98 0.01 0);
+  --foreground: oklch(14.958% 0.00002 271.152);
 
   /* Playing card white/cream */
   --card: oklch(0.98 0.005 60);
