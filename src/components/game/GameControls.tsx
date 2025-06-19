@@ -9,8 +9,6 @@ interface GameControlsProps {
   onPlay: () => void;
   onPass: () => void;
   onClearSelection: () => void;
-  onSortByValue: () => void;
-  onSortBySuit: () => void;
   canPlay: boolean;
   canPass: boolean;
   isCurrentPlayer: boolean;
@@ -22,8 +20,6 @@ export function GameControls({
   onPlay,
   onPass,
   onClearSelection,
-  onSortByValue,
-  onSortBySuit,
   canPlay,
   canPass,
   isCurrentPlayer,
@@ -31,8 +27,13 @@ export function GameControls({
 }: GameControlsProps) {
   if (!isCurrentPlayer) {
     return (
-      <div className={cn("flex justify-center items-center p-4", className)}>
-        <div className="text-gray-500 text-sm">
+      <div
+        className={cn(
+          "flex justify-center items-center bg-muted p-4 h-full",
+          className
+        )}
+      >
+        <div className="z-10 text-6xl text-white">
           Waiting for other players...
         </div>
       </div>
@@ -40,20 +41,20 @@ export function GameControls({
   }
 
   return (
-    <div className="bottom-0 left-1/2 absolute w-full transform -translate-x-1/2">
+    <div className="bottom-0 left-1/2 absolute border w-full h-[20em] transform -translate-x-1/2">
       <div className={cn("flex flex-col gap-4 p-4 rounded-lg", className)}>
         {/* Selected cards info */}
         {selectedCards.length > 0 && (
           <div className="text-center">
-            <div className="mb-2 text-gray-600 text-sm">
+            <div className="mb-2 text-sm text-white">
               Selected: {selectedCards.length} card
               {selectedCards.length > 1 ? "s" : ""}
             </div>
-            <div className="flex flex-wrap justify-center gap-1">
+            <div className="flex flex-wrap justify-center gap-2">
               {selectedCards.map((card, index) => (
                 <span
                   key={`${card.code}-${index}`}
-                  className="bg-blue-100 px-2 py-1 rounded text-blue-800 text-xs"
+                  className="bg-blue-100 px-2 py-1 rounded text-blue-800 text-sm"
                 >
                   {card.value}
                   {getSuitSymbol(card.suit)}
@@ -64,7 +65,7 @@ export function GameControls({
         )}
 
         {/* Action buttons */}
-        <div className="flex justify-center gap-2">
+        <div className="bottom-5 left-1/2 absolute flex justify-center gap-2 transform -translate-x-1/3">
           <Button
             variant="default"
             onClick={onPlay}
@@ -89,33 +90,6 @@ export function GameControls({
             </Button>
           )}
         </div>
-
-        {/* Help text */}
-        <div className="text-center text-gray-500 text-xs">
-          {selectedCards.length > 0 &&
-            !canPlay &&
-            "Invalid combination - select different cards"}
-          {selectedCards.length > 0 && canPlay && "Ready to play!"}
-        </div>
-      </div>
-      {/* Sorting buttons */}
-      <div className="top-0 right-1/5 absolute flex flex-col justify-center gap-2 -translate-y-20">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onSortByValue}
-          className="px-3 text-xs"
-        >
-          Sort by Value
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onSortBySuit}
-          className="px-3 text-xs"
-        >
-          Sort by Suit
-        </Button>
       </div>
     </div>
   );

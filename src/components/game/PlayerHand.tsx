@@ -3,6 +3,7 @@
 import { LocalCard } from "@/lib/interfaces/cards";
 import { cn } from "@/lib/utils";
 import React from "react";
+import { Button } from "../ui/button";
 import { PlayingCard } from "./PlayingCard";
 
 interface PlayerHandProps {
@@ -14,7 +15,10 @@ interface PlayerHandProps {
   position: "bottom" | "top" | "left" | "right";
   playerName: string;
   cardCount?: number; // For other players where we only show count
+  mustPlayThreeOfSpades?: boolean; // Special highlighting for 3 of Spades
   className?: string;
+  onSortByValue?: () => void;
+  onSortBySuit?: () => void;
 }
 
 export function PlayerHand({
@@ -22,10 +26,13 @@ export function PlayerHand({
   selectedCards,
   onCardClick,
   onCardMove,
+  onSortByValue,
+  onSortBySuit,
   isCurrentPlayer = false,
   position,
   playerName,
   cardCount,
+  mustPlayThreeOfSpades = false,
   className,
 }: PlayerHandProps) {
   const isOwnCards = position === "bottom";
@@ -79,7 +86,7 @@ export function PlayerHand({
   return (
     <div className={cn("flex flex-col items-center gap-2", className)}>
       {/* Player name and card count */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 my-3">
         <span
           className={cn(
             "font-semibold text-sm px-2 py-1 rounded",
@@ -103,25 +110,55 @@ export function PlayerHand({
               const isSelected = selectedCards.some(
                 (selectedCard) => selectedCard.code === card.code
               );
+              const isThreeOfSpades = card.code === "3S";
+              const shouldHighlight = mustPlayThreeOfSpades && isThreeOfSpades;
+
               return (
-                <div
-                  key={`${card.code}-${index}`}
-                  draggable={!!onCardMove}
-                  onDragStart={(e) => handleDragStart(e, index)}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, index)}
-                  className="relative"
-                >
-                  <PlayingCard
-                    card={card}
-                    isSelected={isSelected}
-                    onClick={() => onCardClick(card)}
-                    size="medium"
-                    className={cn(
-                      "transition-all duration-200",
-                      onCardMove && "cursor-move hover:shadow-lg"
+                <div key={`${card.code}-${index}`}>
+                  <div
+                    draggable={!!onCardMove}
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, index)}
+                    className="relative"
+                  >
+                    <PlayingCard
+                      card={card}
+                      isSelected={isSelected}
+                      isHighlighted={shouldHighlight}
+                      onClick={() => onCardClick(card)}
+                      size="medium"
+                      className={cn(
+                        "transition-all duration-200",
+                        onCardMove && "cursor-move hover:shadow-lg"
+                      )}
+                    />
+                    {shouldHighlight && (
+                      <div className="-top-15 left-1/2 absolute bg-yellow-400 px-2 py-1 rounded-full font-bold text-black text-xs transform -translate-x-1/2 animate-bounce">
+                        PLAY ME!
+                      </div>
                     )}
-                  />
+                  </div>
+
+                  {/* Sorting buttons */}
+                  <div className="-right-25 -bottom-17 absolute flex flex-col justify-center gap-2 -translate-y-20">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={onSortByValue}
+                      className="px-3 text-xs"
+                    >
+                      Sort by Value
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={onSortBySuit}
+                      className="px-3 text-xs"
+                    >
+                      Sort by Suit
+                    </Button>
+                  </div>
                 </div>
               );
             })
