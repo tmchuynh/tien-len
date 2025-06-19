@@ -16,17 +16,32 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+  --color-chart-6: var(--chart-6);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-outline: var(--outline);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
+  --color-fancy-foreground: var(--fancy-foreground);
+  --color-fancy: var(--fancy);
+  --color-tertiary-foreground: var(--tertiary-foreground);
+  --color-tertiary: var(--tertiary);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -37,10 +52,28 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-card-red: var(--card-red);
+  --color-card-black: var(--card-black);
+  --color-card-back: var(--card-back);
+  --color-table-felt: var(--table-felt);
+  --color-chip-gold: var(--chip-gold);
+  --color-chip-red: var(--chip-red);
+  --color-chip-blue: var(--chip-blue);
+  --color-chip-green: var(--chip-green);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --animate-move: move 5s linear infinite;
+
+  @keyframes move {
+    0% {
+      transform: translateX(-200px);
+    }
+    100% {
+      transform: translateX(200px);
+    }
+  }
 }
 
 :root {
@@ -84,7 +117,7 @@
 
   /* Card suit colors */
   --chart-1: oklch(0.55 0.22 15); /* Hearts/Diamonds red */
-  --chart-2: oklch(0.15 0.01 0);  /* Spades/Clubs black */
+  --chart-2: oklch(0.15 0.01 0); /* Spades/Clubs black */
   --chart-3: oklch(0.75 0.15 85); /* Gold accent */
   --chart-4: oklch(0.45 0.15 230); /* Blue accent */
   --chart-5: oklch(0.35 0.06 152); /* Green felt */
@@ -149,8 +182,8 @@
 
   /* Dark mode chart colors */
   --chart-1: oklch(0.65 0.25 15); /* Bright red */
-  --chart-2: oklch(0.85 0.01 0);  /* Light gray */
-  --chart-3: oklch(0.8 0.18 85);  /* Bright gold */
+  --chart-2: oklch(0.85 0.01 0); /* Light gray */
+  --chart-3: oklch(0.8 0.18 85); /* Bright gold */
   --chart-4: oklch(0.55 0.18 230); /* Bright blue */
   --chart-5: oklch(0.25 0.04 152); /* Dark green */
 
@@ -175,28 +208,61 @@
   --chip-green: oklch(0.45 0.08 152);
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+@font-face {
+  font-family: "EncodeSans";
+  src: url("/fonts/EncodeSans-VariableFont_wdth,wght.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Gloock";
+  src: url("/fonts/Gloock-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "NotoSans";
+  src: url("/fonts/NotoSans-VariableFont_wdth,wght.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
 }
 
 @layer components {
-  /* Card styling */
+  Card,
+  AlertDialog,
+  Dialog {
+    @apply bg-card text-card-foreground border-border rounded-lg shadow-md;
+  }
+  Popover {
+    @apply bg-popover text-popover-foreground border-border rounded-lg shadow-md;
+  }
+  Image {
+    @apply object-cover object-center rounded-2xl;
+  }
   .card-playing {
     @apply bg-card text-card-foreground rounded-lg border border-border shadow-lg;
     aspect-ratio: 2.5/3.5;
-    background: linear-gradient(145deg, oklch(0.98 0.005 60), oklch(0.95 0.01 60));
+    background: linear-gradient(
+      145deg,
+      oklch(0.98 0.005 60),
+      oklch(0.95 0.01 60)
+    );
   }
 
   .card-back {
     @apply bg-gradient-to-br from-blue-600 to-blue-800 text-white;
-    background-image: 
-      radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 2px, transparent 2px),
-      radial-gradient(circle at 75% 75%, rgba(255,255,255,0.1) 2px, transparent 2px);
+    background-image: radial-gradient(
+        circle at 25% 25%,
+        rgba(255, 255, 255, 0.1) 2px,
+        transparent 2px
+      ),
+      radial-gradient(
+        circle at 75% 75%,
+        rgba(255, 255, 255, 0.1) 2px,
+        transparent 2px
+      );
     background-size: 20px 20px;
   }
 
@@ -210,12 +276,13 @@
 
   /* Table felt effect */
   .table-felt {
-    background: linear-gradient(45deg, 
-      oklch(0.25 0.08 152) 25%, 
-      oklch(0.23 0.07 152) 25%, 
-      oklch(0.23 0.07 152) 50%, 
-      oklch(0.25 0.08 152) 50%, 
-      oklch(0.25 0.08 152) 75%, 
+    background: linear-gradient(
+      45deg,
+      oklch(0.25 0.08 152) 25%,
+      oklch(0.23 0.07 152) 25%,
+      oklch(0.23 0.07 152) 50%,
+      oklch(0.25 0.08 152) 50%,
+      oklch(0.25 0.08 152) 75%,
       oklch(0.23 0.07 152) 75%
     );
     background-size: 40px 40px;
@@ -228,7 +295,7 @@
   }
 
   .chip::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 10%;
     left: 10%;
@@ -289,9 +356,18 @@
     z-index: 10;
   }
 
-  /* Game area styling */
   .game-table {
-    @apply table-felt min-h-screen p-8;
+    @apply min-h-screen p-8;
+    background: linear-gradient(
+      45deg,
+      oklch(0.25 0.08 152) 25%,
+      oklch(0.23 0.07 152) 25%,
+      oklch(0.23 0.07 152) 50%,
+      oklch(0.25 0.08 152) 50%,
+      oklch(0.25 0.08 152) 75%,
+      oklch(0.23 0.07 152) 75%
+    );
+    background-size: 40px 40px;
     background-attachment: fixed;
   }
 
@@ -305,14 +381,30 @@
   }
 
   @keyframes winner-pulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
-    50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+    }
   }
 
   /* Vietnamese card game specific */
   .tien-len-table {
-    @apply game-table grid grid-cols-1 lg:grid-cols-3 gap-8;
-    grid-template-areas: 
+    @apply grid grid-cols-1 lg:grid-cols-3 gap-8 min-h-screen p-8;
+    background: linear-gradient(
+      45deg,
+      oklch(0.25 0.08 152) 25%,
+      oklch(0.23 0.07 152) 25%,
+      oklch(0.23 0.07 152) 50%,
+      oklch(0.25 0.08 152) 50%,
+      oklch(0.25 0.08 152) 75%,
+      oklch(0.23 0.07 152) 75%
+    );
+    background-size: 40px 40px;
+    background-attachment: fixed;
+    grid-template-areas:
       "top top top"
       "left center right"
       "bottom bottom bottom";
@@ -325,5 +417,64 @@
   .center-pile {
     @apply flex flex-col items-center justify-center p-6 rounded-xl bg-black/20 backdrop-blur-sm;
     grid-area: center;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background font-[NotoSans] text-foreground cursor-default;
+  }
+
+  h1 {
+    @apply font-[Gloock] mb-2 font-bold text-4xl;
+  }
+
+  h2 {
+    @apply font-[EncodeSans] font-extrabold mb-3 text-2xl lg:text-3xl;
+  }
+
+  h3 {
+    @apply font-[NotoSans] font-bold text-base tracking-wider lg:text-xl;
+  }
+
+  h4 {
+    @apply font-[Gloock] lg:text-lg text-primary underline text-base;
+  }
+  h5 {
+    @apply font-[Gloock] uppercase font-medium text-gray-600 dark:text-gray-400 text-xs;
+  }
+  p {
+    @apply text-pretty leading-relaxed;
+  }
+  blockquote {
+    @apply mt-2 italic mb-5 text-lg max-w-4xl;
+  }
+  header {
+    @apply mb-8 w-full;
+  }
+
+  header h1,
+  header h5,
+  header blockquote {
+    @apply text-start;
+  }
+
+  section {
+    @apply mb-10;
+  }
+
+  strong {
+    @apply font-semibold;
+  }
+}
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
