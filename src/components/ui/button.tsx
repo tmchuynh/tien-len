@@ -35,9 +35,13 @@ const buttonVariants = cva(
         "poker-chip-gold":
           "bg-gradient-to-br from-yellow-400 to-yellow-600 text-yellow-900 border-4 border-yellow-700 rounded-full shadow-lg hover:shadow-xl hover:shadow-yellow-400/30 hover:scale-110 active:scale-95 transition-all duration-300 relative overflow-hidden before:absolute before:inset-2 before:border-2 before:border-dashed before:border-yellow-800/60 before:rounded-full font-bold",
         "table-felt":
-          "bg-gradient-to-br from-green-700 to-green-900 text-green-100 border-2 border-green-600 rounded-lg shadow-lg hover:shadow-xl hover:shadow-green-700/25 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden table-felt",
+          "text-green-100 border-2 border-green-600 rounded-lg shadow-lg hover:shadow-xl hover:shadow-green-700/25 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden table-felt",
         dealer:
           "bg-gradient-to-br from-purple-600 to-purple-800 text-white border-2 border-purple-500 rounded-lg shadow-lg hover:shadow-xl hover:shadow-purple-600/25 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-gold/10 before:to-transparent",
+        winner:
+          "bg-gradient-to-br from-yellow-400 to-yellow-600 text-yellow-900 shadow-lg animate-pulse hover:shadow-xl hover:shadow-yellow-400/30 hover:scale-105 active:scale-95 transition-all duration-300 font-bold",
+        "hand-count":
+          "border-muted bg-gradient-to-br from-muted/80 to-muted/60 text-muted-foreground shadow-sm hover:bg-muted hover:scale-105 transition-all duration-300 font-mono",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
