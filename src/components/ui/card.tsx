@@ -75,6 +75,13 @@ const cardVariants = cva(
         sm: "scale-75",
         lg: "scale-125",
         xl: "scale-150",
+        // Card-specific sizes based on real playing card dimensions
+        "bridge-size": "w-16 h-24", // Bridge cards: 2.25" × 3.5" (narrower)
+        "poker-size": "w-18 h-28", // Poker cards: 2.5" × 3.5" (standard)
+        "bridge-sm": "w-12 h-18", // Small bridge cards
+        "poker-sm": "w-14 h-20", // Small poker cards
+        "bridge-lg": "w-20 h-32", // Large bridge cards
+        "poker-lg": "w-24 h-36", // Large poker cards
       },
     },
     defaultVariants: {
