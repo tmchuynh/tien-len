@@ -23,7 +23,12 @@ export function GameStatus({
   className,
 }: GameStatusProps) {
   return (
-    <div className={cn("bg-white border rounded-lg p-4 shadow-sm", className)}>
+    <div
+      className={cn(
+        "bg-white border rounded-lg p-4 shadow-sm w-fit m-8",
+        className
+      )}
+    >
       {/* Game phase indicator */}
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-semibold text-gray-800">Game Status</h3>
