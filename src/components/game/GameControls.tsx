@@ -26,28 +26,37 @@ export function GameControls({
   className,
 }: GameControlsProps) {
   return (
-    <div className="bottom-0 left-1/2 absolute border w-full h-16 transform -translate-x-1/2 pointer-events-none">
-      <div className={cn("flex flex-col gap-4 p-4 rounded-lg pointer-events-auto", className)}>
-        {!isCurrentPlayer && (
-          <div className="text-center">
-            <div className="mb-2 text-lg text-white">
-              Waiting for other players...
-            </div>
+    <>
+      {/* Selected cards info - positioned higher up to not interfere with sorting buttons */}
+      {selectedCards.length > 0 && (
+        <div className="bottom-32 left-1/2 absolute transform -translate-x-1/2 pointer-events-none">
+          <div className="bg-black/50 shadow-lg px-4 py-2 rounded-full text-sm text-white">
+            Selected: {selectedCards.length} card
+            {selectedCards.length > 1 ? "s" : ""} -{" "}
+            {selectedCards
+              .map((card) => `${card.value}${getSuitSymbol(card.suit)}`)
+              .join(", ")}
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Selected cards info */}
-        {selectedCards.length > 0 && (
-          <div className="text-center mb-2">
-            <div className="text-sm text-white">
-              Selected: {selectedCards.length} card
-              {selectedCards.length > 1 ? "s" : ""} - {selectedCards.map(card => `${card.value}${getSuitSymbol(card.suit)}`).join(", ")}
-            </div>
+      {/* Waiting message */}
+      {!isCurrentPlayer && (
+        <div className="bottom-32 left-1/2 absolute transform -translate-x-1/2 pointer-events-none">
+          <div className="bg-black/50 shadow-lg px-4 py-2 rounded-full text-sm text-white">
+            Waiting for other players...
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Action buttons */}
-        <div className="flex justify-center gap-2">
+      {/* Action buttons - fixed at bottom */}
+      <div className="bottom-4 left-1/2 absolute transform -translate-x-1/2 pointer-events-none">
+        <div
+          className={cn(
+            "flex justify-center gap-2 p-2 pointer-events-auto",
+            className
+          )}
+        >
           <Button
             variant="default"
             onClick={onPlay}
@@ -73,7 +82,7 @@ export function GameControls({
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

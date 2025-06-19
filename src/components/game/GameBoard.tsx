@@ -364,7 +364,7 @@ export function GameBoard({ className }: GameBoardProps) {
           <p className="mt-4 text-lg">Initializing game...</p>
           <button 
             onClick={initializeGame} 
-            className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            className="bg-blue-500 hover:bg-blue-700 mt-4 px-4 py-2 rounded font-bold text-white"
           >
             Force Initialize
           </button>
