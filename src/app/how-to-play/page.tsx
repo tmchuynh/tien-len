@@ -28,8 +28,37 @@ export default function HowToPlay() {
           </Link>
         </div>
 
+        {/* Quick Reference Card */}
+        <Card className="bg-white/90 backdrop-blur-sm mt-8 p-6">
+          <h3 className="mb-4 font-bold text-2xl text-green-800">
+            📚 Quick Reference
+          </h3>
+          <div className="gap-6 grid grid-cols-1 md:grid-cols-3 text-sm">
+            <div>
+              <h4 className="mb-2 font-semibold">🔢 Card Order</h4>
+              <div className="bg-gray-100 p-2 rounded">
+                3 - 4 - 5 - 6 - 7 - 8 - 9 - 10 - J - Q - K - A - 2
+              </div>
+            </div>
+            <div>
+              <h4 className="mb-2 font-semibold">🏅 Suit Order</h4>
+              <div className="bg-gray-100 p-2 rounded">
+                ♠️ Spades - ♣️ Clubs - ♦️ Diamonds - ♥️ Hearts
+              </div>
+            </div>
+            <div>
+              <h4 className="mb-2 font-semibold">💣 Special Beats</h4>
+              <ul className="space-y-1 text-xs">
+                <li>• Quad beats solo 2</li>
+                <li>• 3-pair run beats solo 2</li>
+                <li>• Four 2s = Auto Win 🏆</li>
+              </ul>
+            </div>
+          </div>
+        </Card>
+
         {/* Rules Content */}
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs defaultValue="overview" className="mt-10 w-full">
           <TabsList className="grid grid-cols-5 bg-green-800/30 backdrop-blur-sm mb-8 w-full">
             <TabsTrigger
               value="overview"
@@ -574,35 +603,6 @@ export default function HowToPlay() {
             </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Quick Reference Card */}
-        <Card className="bg-white/90 backdrop-blur-sm mt-8 p-6">
-          <h3 className="mb-4 font-bold text-2xl text-green-800">
-            📚 Quick Reference
-          </h3>
-          <div className="gap-6 grid grid-cols-1 md:grid-cols-3 text-sm">
-            <div>
-              <h4 className="mb-2 font-semibold">🔢 Card Order</h4>
-              <div className="bg-gray-100 p-2 rounded">
-                3 - 4 - 5 - 6 - 7 - 8 - 9 - 10 - J - Q - K - A - 2
-              </div>
-            </div>
-            <div>
-              <h4 className="mb-2 font-semibold">🏅 Suit Order</h4>
-              <div className="bg-gray-100 p-2 rounded">
-                ♠️ Spades - ♣️ Clubs - ♦️ Diamonds - ♥️ Hearts
-              </div>
-            </div>
-            <div>
-              <h4 className="mb-2 font-semibold">💣 Special Beats</h4>
-              <ul className="space-y-1 text-xs">
-                <li>• Quad beats solo 2</li>
-                <li>• 3-pair run beats solo 2</li>
-                <li>• Four 2s = Auto Win 🏆</li>
-              </ul>
-            </div>
-          </div>
-        </Card>
 
         {/* Action Buttons */}
         <div className="flex flex-wrap justify-center gap-4 mt-8">
