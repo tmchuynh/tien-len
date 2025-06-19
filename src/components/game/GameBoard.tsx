@@ -16,7 +16,7 @@ import {
   sortCardsByValue,
 } from "@/lib/utils/cardSorting";
 import { convertCardsToLocal } from "@/lib/utils/cards";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GameControls } from "./GameControls";
 import { GameStatus } from "./GameStatus";
 import { GameTable } from "./GameTable";
@@ -62,6 +62,8 @@ const createInitialPlayers = (): Player[] => [
 const mockLastPlayedCards: LocalCard[] = [];
 
 export function GameBoard({ className }: GameBoardProps) {
+  console.log("GameBoard component started rendering");
+
   const [players, setPlayers] = useState<Player[]>(createInitialPlayers());
   const [selectedCards, setSelectedCards] = useState<LocalCard[]>([]);
   const [lastPlayedCards, setLastPlayedCards] =
@@ -77,6 +79,19 @@ export function GameBoard({ className }: GameBoardProps) {
   const [isFirstPlay, setIsFirstPlay] = useState<boolean>(true);
   const [mustPlayThreeOfSpades, setMustPlayThreeOfSpades] =
     useState<boolean>(false);
+
+  const hasInitialized = useRef(false);
+
+  console.log("GameBoard state check - gamePhase:", gamePhase);
+  console.log("GameBoard state check - player count:", players.length);
+  console.log(
+    "GameBoard state check - currentPlayerIndex:",
+    currentPlayerIndex
+  );
+  console.log(
+    "GameBoard state check - hasInitialized:",
+    hasInitialized.current
+  );
 
   const currentPlayer = players[currentPlayerIndex];
   const isCurrentPlayerActive = currentPlayer?.id === "player1";
@@ -155,6 +170,32 @@ export function GameBoard({ className }: GameBoardProps) {
     }
   };
 
+  // Initialize game on component mount - MOVED TO END
+  useEffect(() => {
+    console.log("=== USEEFFECT TRIGGERED (MOVED TO END) ===");
+    console.log("useEffect triggered - hasInitialized:", hasInitialized.current);
+    
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      console.log("initializeGame function available:", typeof initializeGame);
+      
+      // Add a simple delay to see if timing is the issue
+      setTimeout(() => {
+        console.log("About to call initializeGame");
+        initializeGame();
+      }, 100);
+    }
+  }, []);
+
+  // EMERGENCY FIX: Call initialize directly if not initialized
+  if (!hasInitialized.current && gamePhase === "waiting") {
+    console.log("EMERGENCY: Calling initializeGame directly");
+    hasInitialized.current = true;
+    setTimeout(() => {
+      initializeGame();
+    }, 100);
+  }
+
   // Start new game
   const startNewGame = async () => {
     setPlayers(createInitialPlayers());
@@ -169,25 +210,22 @@ export function GameBoard({ className }: GameBoardProps) {
     await initializeGame();
   };
 
-  // Initialize game on component mount
-  useEffect(() => {
-    console.log("useEffect triggered - calling initializeGame");
-    initializeGame();
-  }, []);
-
   const handleCardClick = (card: LocalCard) => {
     console.log("handleCardClick called - card:", card.code);
     console.log("handleCardClick - gamePhase:", gamePhase);
-    console.log("handleCardClick - isCurrentPlayerActive:", isCurrentPlayerActive);
+    console.log(
+      "handleCardClick - isCurrentPlayerActive:",
+      isCurrentPlayerActive
+    );
     console.log("handleCardClick - selectedCards before:", selectedCards);
-    
+
     // Always allow card selection for organization, regardless of turn
     setSelectedCards((prev) => {
       const isAlreadySelected = prev.some((c) => c.code === card.code);
-      const newSelection = isAlreadySelected 
+      const newSelection = isAlreadySelected
         ? prev.filter((c) => c.code !== card.code)
         : [...prev, card];
-      
+
       console.log("handleCardClick - selectedCards after:", newSelection);
       return newSelection;
     });
@@ -428,7 +466,10 @@ export function GameBoard({ className }: GameBoardProps) {
   console.log("GameBoard render - cards for user:", players[0]?.cards?.length);
   console.log("GameBoard render - selectedCards:", selectedCards.length);
   console.log("GameBoard render - gamePhase:", gamePhase);
-  console.log("GameBoard render - isCurrentPlayerActive:", isCurrentPlayerActive);
+  console.log(
+    "GameBoard render - isCurrentPlayerActive:",
+    isCurrentPlayerActive
+  );
 
   // Show loading or error states
   if (isLoading) {
