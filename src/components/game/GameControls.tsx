@@ -40,7 +40,7 @@ export function GameControls({
   }
 
   return (
-    <div className="bottom-0 left-1/2 absolute border w-full transform -translate-x-1/2">
+    <div className="bottom-0 left-1/2 absolute w-full transform -translate-x-1/2">
       <div className={cn("flex flex-col gap-4 p-4 rounded-lg", className)}>
         {/* Selected cards info */}
         {selectedCards.length > 0 && (
@@ -75,7 +75,7 @@ export function GameControls({
           </Button>
 
           <Button
-            variant="outline"
+            variant="card"
             onClick={onPass}
             disabled={!canPass}
             className="px-6"
@@ -101,7 +101,7 @@ export function GameControls({
       {/* Sorting buttons */}
       <div className="top-0 right-1/5 absolute flex flex-col justify-center gap-2 -translate-y-20">
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={onSortByValue}
           className="px-3 text-xs"
@@ -109,7 +109,7 @@ export function GameControls({
           Sort by Value
         </Button>
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={onSortBySuit}
           className="px-3 text-xs"
