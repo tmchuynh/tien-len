@@ -150,3 +150,24 @@ export const PILE_NAMES = {
   PLAYER_3: "player3",
   PLAYER_4: "player4",
 } as const;
+
+
+export const SUIT_COLORS = {
+  hearts: "text-red-500",
+  diamonds: "text-red-500",
+  clubs: "text-black",
+  spades: "text-black",
+};
+
+export const SUIT_SYMBOLS = {
+  hearts: "♥️",
+  diamonds: "♦️",
+  clubs: "♣️",
+  spades: "♠️",
+};
+
+export const SIZE_CLASSES = {
+  small: "w-12 h-16 text-xs",
+  medium: "w-16 h-24 text-sm",
+  large: "w-20 h-32 text-base",
+};

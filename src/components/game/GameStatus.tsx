@@ -2,14 +2,8 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Player } from "@/lib/interfaces/player";
 import { cn } from "@/lib/utils";
-
-interface Player {
-  name: string;
-  cardCount: number;
-  isActive: boolean;
-  hasFinished: boolean;
-}
 
 interface GameStatusProps {
   players: Player[];

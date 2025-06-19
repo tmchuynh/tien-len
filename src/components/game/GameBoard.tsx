@@ -12,15 +12,7 @@ import { GameControls } from "./GameControls";
 import { GameStatus } from "./GameStatus";
 import { GameTable } from "./GameTable";
 import { PlayerHand } from "./PlayerHand";
-
-interface Player {
-  id: string;
-  name: string;
-  cardCount: number;
-  isActive: boolean;
-  hasFinished: boolean;
-  cards?: LocalCard[]; // Only for current player
-}
+import { Player } from "@/lib/interfaces/player";
 
 interface GameBoardProps {
   className?: string;

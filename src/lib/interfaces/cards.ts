@@ -2,6 +2,8 @@
 // CARD & DECK API INTERFACES
 // =====================================================
 
+import { Player } from "./player";
+
 /**
  * Base API Response
  */
@@ -86,18 +88,18 @@ export interface PileDrawResponse extends PileResponse {
 
 export interface GameState {
   deckId: string;
-  players: string[];
-  currentPlayer: number;
+  players: Player[];
+  currentPlayer: Player["name"];
   gamePhase: "dealing" | "playing" | "finished";
   lastPlay?: {
-    player: string;
+    player: Player["name"];
     cards: Card[];
     playType: string;
   };
 }
 
 export interface TienLenHand {
-  playerId: string;
+  playerId: Player["id"];
   cards: Card[];
   cardCount: number;
 }
@@ -124,6 +126,6 @@ export type TienLenPlayType =
 export interface CardPlay {
   cards: Card[];
   playType: TienLenPlayType;
-  player: string;
+  player: Player["name"];
   timestamp: number;
 }
