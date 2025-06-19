@@ -229,6 +229,31 @@ export async function returnSpecificPileCardsToDeck(
  * Tien Len Game Specific Functions
  */
 
+// Find which player has the 3 of Spades
+export async function findPlayerWithThreeOfSpades(deckId: string): Promise<{
+  playerIndex: number;
+  playerName: string;
+} | null> {
+  try {
+    for (let i = 0; i < 4; i++) {
+      const playerName = `player${i + 1}`;
+      const cards = await getPlayerHand(deckId, playerName);
+      const hasThreeOfSpades = cards.some(card => card.code === "3S");
+      
+      if (hasThreeOfSpades) {
+        return {
+          playerIndex: i,
+          playerName: playerName
+        };
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error("Error finding player with 3 of Spades:", error);
+    return null;
+  }
+}
+
 // Deal cards for Tien Len (13 cards per player, up to 4 players)
 export async function dealTienLenHands(
   deckId: string,
