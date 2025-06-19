@@ -22,15 +22,17 @@ export function GameTable({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center  gap-4 p-8",
+        "flex flex-col items-center justify-center  h-1/2 w-full gap-4 p-8",
         className
       )}
     >
       {/* Game status */}
       <div className="text-center">
-        <div className="font-semibold text-gray-800 text-lg">
+        <div className="font-semibold text-lg text-white uppercase">
           {gamePhase === "waiting" && "Waiting for game to start..."}
-          {gamePhase === "playing" && `${currentPlayer}'s turn`}
+          {gamePhase === "playing" && currentPlayer === "You"
+            ? "Your turn"
+            : `${currentPlayer}'s turn`}
           {gamePhase === "finished" && "Game finished!"}
         </div>
         {lastPlayer && lastPlayedCards.length > 0 && (
@@ -63,11 +65,11 @@ export function GameTable({
       </div>
 
       {/* Play type indicator */}
-      {lastPlayedCards.length > 0 && (
+      {/* {lastPlayedCards.length > 0 && (
         <div className="bg-gray-100 px-2 py-1 rounded text-gray-500 text-xs">
           {getPlayType(lastPlayedCards)}
         </div>
-      )}
+      )} */}
     </div>
   );
 }
