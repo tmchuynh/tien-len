@@ -22,6 +22,8 @@ export function GameControls({
   onPlay,
   onPass,
   onClearSelection,
+  onSortByValue,
+  onSortBySuit,
   canPlay,
   canPass,
   isCurrentPlayer,
@@ -87,6 +89,26 @@ export function GameControls({
             Clear
           </Button>
         )}
+      </div>
+
+      {/* Sorting buttons */}
+      <div className="flex justify-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onSortByValue}
+          className="px-3 text-xs"
+        >
+          Sort by Value
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onSortBySuit}
+          className="px-3 text-xs"
+        >
+          Sort by Suit
+        </Button>
       </div>
 
       {/* Help text */}
