@@ -31,6 +31,13 @@ export function PlayingCard({
   const suitColor = SUIT_COLORS[card.suit];
   const sizeClass = SIZE_CLASSES[size];
 
+  const handleClick = () => {
+    console.log("🃏 PlayingCard clicked:", card.code, "isPlayable:", isPlayable);
+    if (isPlayable && onClick) {
+      onClick();
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -43,7 +50,7 @@ export function PlayingCard({
         !isPlayable && "opacity-50 cursor-not-allowed",
         className
       )}
-      onClick={isPlayable ? onClick : undefined}
+      onClick={handleClick}
     >
       {/* Top left corner */}
       <div className={cn("flex gap-1 absolute left-1 top-1", suitColor)}>
