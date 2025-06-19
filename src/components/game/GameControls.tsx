@@ -26,11 +26,11 @@ export function GameControls({
   className,
 }: GameControlsProps) {
   return (
-    <div className="bottom-0 left-1/2 absolute border w-full h-[20em] transform -translate-x-1/2">
-      <div className={cn("flex flex-col gap-4 p-4 rounded-lg", className)}>
+    <div className="bottom-0 left-1/2 absolute border w-full h-16 transform -translate-x-1/2 pointer-events-none">
+      <div className={cn("flex flex-col gap-4 p-4 rounded-lg pointer-events-auto", className)}>
         {!isCurrentPlayer && (
           <div className="text-center">
-            <div className="mb-2 text-2xl text-white">
+            <div className="mb-2 text-lg text-white">
               Waiting for other players...
             </div>
           </div>
@@ -38,27 +38,16 @@ export function GameControls({
 
         {/* Selected cards info */}
         {selectedCards.length > 0 && (
-          <div className="text-center">
-            <div className="mb-2 text-sm text-white">
+          <div className="text-center mb-2">
+            <div className="text-sm text-white">
               Selected: {selectedCards.length} card
-              {selectedCards.length > 1 ? "s" : ""}
-            </div>
-            <div className="flex flex-wrap justify-center gap-2">
-              {selectedCards.map((card, index) => (
-                <span
-                  key={`${card.code}-${index}`}
-                  className="bg-blue-100 px-2 py-1 rounded text-blue-800 text-sm"
-                >
-                  {card.value}
-                  {getSuitSymbol(card.suit)}
-                </span>
-              ))}
+              {selectedCards.length > 1 ? "s" : ""} - {selectedCards.map(card => `${card.value}${getSuitSymbol(card.suit)}`).join(", ")}
             </div>
           </div>
         )}
 
         {/* Action buttons */}
-        <div className="bottom-5 left-1/2 absolute flex justify-center gap-2 transform -translate-x-1/3">
+        <div className="flex justify-center gap-2">
           <Button
             variant="default"
             onClick={onPlay}
