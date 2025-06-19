@@ -10,13 +10,9 @@ import {
 import { LocalCard } from "@/lib/interfaces/cards";
 import { Player } from "@/lib/interfaces/player";
 import { cn } from "@/lib/utils";
-import {
-  moveCard,
-  sortCardsBySuit,
-  sortCardsByValue,
-} from "@/lib/utils/cardSorting";
+import { sortCardsBySuit, sortCardsByValue } from "@/lib/utils/cardSorting";
 import { convertCardsToLocal } from "@/lib/utils/cards";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { GameControls } from "./GameControls";
 import { GameStatus } from "./GameStatus";
 import { GameTable } from "./GameTable";
@@ -62,8 +58,6 @@ const createInitialPlayers = (): Player[] => [
 const mockLastPlayedCards: LocalCard[] = [];
 
 export function GameBoard({ className }: GameBoardProps) {
-  console.log("GameBoard component started rendering");
-
   const [players, setPlayers] = useState<Player[]>(createInitialPlayers());
   const [selectedCards, setSelectedCards] = useState<LocalCard[]>([]);
   const [lastPlayedCards, setLastPlayedCards] =
@@ -80,56 +74,36 @@ export function GameBoard({ className }: GameBoardProps) {
   const [mustPlayThreeOfSpades, setMustPlayThreeOfSpades] =
     useState<boolean>(false);
 
-  const hasInitialized = useRef(false);
-
-  console.log("GameBoard state check - gamePhase:", gamePhase);
-  console.log("GameBoard state check - player count:", players.length);
-  console.log(
-    "GameBoard state check - currentPlayerIndex:",
-    currentPlayerIndex
-  );
-  console.log(
-    "GameBoard state check - hasInitialized:",
-    hasInitialized.current
-  );
-
   const currentPlayer = players[currentPlayerIndex];
   const isCurrentPlayerActive = currentPlayer?.id === "player1";
 
   // Initialize deck and deal cards
   const initializeGame = async () => {
-    console.log("initializeGame started");
+    console.log("🎮 Game starting...");
     setIsLoading(true);
     setError("");
 
     try {
       // Create a new shuffled Tien Len deck
-      console.log("Creating deck...");
       const deck = await createTienLenDeck();
-      console.log("Deck created:", deck);
 
       if (!deck.success) {
         throw new Error("Failed to create deck");
       }
 
       setDeckId(deck.deck_id);
-      console.log("Deck ID set:", deck.deck_id);
 
       // Deal cards to all players
-      console.log("Dealing cards...");
       const dealResult = await dealTienLenHands(deck.deck_id, 4);
-      console.log("Deal result:", dealResult);
 
       if (!dealResult.success) {
         throw new Error("Failed to deal cards");
       }
 
       // Get current player's cards
-      console.log("Getting player cards...");
       const playerCards = await getPlayerHand(deck.deck_id, "player1");
-      console.log("Player cards received:", playerCards);
       const localCards = convertCardsToLocal(playerCards);
-      console.log("Local cards converted:", localCards);
+      console.log("🃏 User received", localCards.length, "cards");
 
       // Update players with card counts and current player's actual cards
       const updatedPlayers = players.map((player, index) => {
@@ -162,39 +136,21 @@ export function GameBoard({ className }: GameBoardProps) {
         // Fallback to player 1 if not found
         setCurrentPlayerIndex(0);
       }
+
+      console.log("✅ Game ready!");
     } catch (error) {
-      console.error("Error initializing game:", error);
+      console.error("❌ Error initializing game:", error);
       setError("Failed to initialize game. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Initialize game on component mount - MOVED TO END
+  // Initialize game on component mount
   useEffect(() => {
-    console.log("=== USEEFFECT TRIGGERED (MOVED TO END) ===");
-    console.log("useEffect triggered - hasInitialized:", hasInitialized.current);
-    
-    if (!hasInitialized.current) {
-      hasInitialized.current = true;
-      console.log("initializeGame function available:", typeof initializeGame);
-      
-      // Add a simple delay to see if timing is the issue
-      setTimeout(() => {
-        console.log("About to call initializeGame");
-        initializeGame();
-      }, 100);
-    }
+    console.log("🔄 useEffect triggered - calling initializeGame");
+    initializeGame();
   }, []);
-
-  // EMERGENCY FIX: Call initialize directly if not initialized
-  if (!hasInitialized.current && gamePhase === "waiting") {
-    console.log("EMERGENCY: Calling initializeGame directly");
-    hasInitialized.current = true;
-    setTimeout(() => {
-      initializeGame();
-    }, 100);
-  }
 
   // Start new game
   const startNewGame = async () => {
@@ -210,14 +166,9 @@ export function GameBoard({ className }: GameBoardProps) {
     await initializeGame();
   };
 
+  // Handle card click - always allow interaction for card organization
   const handleCardClick = (card: LocalCard) => {
-    console.log("handleCardClick called - card:", card.code);
-    console.log("handleCardClick - gamePhase:", gamePhase);
-    console.log(
-      "handleCardClick - isCurrentPlayerActive:",
-      isCurrentPlayerActive
-    );
-    console.log("handleCardClick - selectedCards before:", selectedCards);
+    console.log("🃏 Card clicked:", card.code);
 
     // Always allow card selection for organization, regardless of turn
     setSelectedCards((prev) => {
@@ -226,13 +177,22 @@ export function GameBoard({ className }: GameBoardProps) {
         ? prev.filter((c) => c.code !== card.code)
         : [...prev, card];
 
-      console.log("handleCardClick - selectedCards after:", newSelection);
+      console.log(
+        "🃏 Selected cards updated:",
+        newSelection.map((c) => c.code)
+      );
       return newSelection;
     });
   };
 
+  // Handle playing cards
   const handlePlay = async () => {
     if (!isCurrentPlayerActive || selectedCards.length === 0 || !deckId) return;
+
+    console.log(
+      "🎯 Playing cards:",
+      selectedCards.map((c) => c.code)
+    );
 
     // Check if it's the first play and 3 of Spades is required
     if (isFirstPlay && mustPlayThreeOfSpades) {
@@ -255,12 +215,11 @@ export function GameBoard({ className }: GameBoardProps) {
       // Remove cards from player's hand locally
       setPlayers((prev) =>
         prev.map((player) => {
-          if (player.id === "player1") {
-            const remainingCards =
-              player.cards?.filter(
-                (card) =>
-                  !selectedCards.some((selected) => selected.code === card.code)
-              ) || [];
+          if (player.id === "player1" && player.cards) {
+            const remainingCards = player.cards.filter(
+              (card) =>
+                !selectedCards.some((selected) => selected.code === card.code)
+            );
             return {
               ...player,
               cards: remainingCards,
@@ -272,166 +231,96 @@ export function GameBoard({ className }: GameBoardProps) {
         })
       );
 
-      // Clear selection
       setSelectedCards([]);
-
-      // Mark first play as complete
-      if (isFirstPlay) {
-        setIsFirstPlay(false);
-        setMustPlayThreeOfSpades(false);
-      }
+      setIsFirstPlay(false);
+      setMustPlayThreeOfSpades(false);
 
       // Move to next player
-      setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
+      setCurrentPlayerIndex((prev) => (prev + 1) % 4);
     } catch (error) {
       console.error("Error playing cards:", error);
       setError("Failed to play cards. Please try again.");
     }
   };
 
+  // Handle pass
   const handlePass = () => {
     if (!isCurrentPlayerActive) return;
-    setSelectedCards([]);
-    setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
+
+    console.log("⏭️ Player passed");
+    setCurrentPlayerIndex((prev) => (prev + 1) % 4);
   };
 
+  // Clear selection
   const handleClearSelection = () => {
     setSelectedCards([]);
   };
 
+  // Card movement for drag & drop - always allow
+  const handleCardMove = (dragIndex: number, hoverIndex: number) => {
+    setPlayers((prev) => {
+      const newPlayers = [...prev];
+      const userPlayer = newPlayers[0];
+
+      if (userPlayer.cards) {
+        const newCards = [...userPlayer.cards];
+        const dragCard = newCards[dragIndex];
+        newCards.splice(dragIndex, 1);
+        newCards.splice(hoverIndex, 0, dragCard);
+
+        newPlayers[0] = {
+          ...userPlayer,
+          cards: newCards,
+        };
+      }
+
+      return newPlayers;
+    });
+  };
+
+  // Sorting functions - always allow
   const handleSortByValue = () => {
-    // Allow sorting at any time for card organization
-    setPlayers((prev) =>
-      prev.map((player) => {
-        if (player.id === "player1" && player.cards) {
-          return {
-            ...player,
-            cards: sortCardsByValue(player.cards),
-          };
-        }
-        return player;
-      })
-    );
+    setPlayers((prev) => {
+      const newPlayers = [...prev];
+      const userPlayer = newPlayers[0];
+
+      if (userPlayer.cards) {
+        newPlayers[0] = {
+          ...userPlayer,
+          cards: sortCardsByValue(userPlayer.cards),
+        };
+      }
+
+      return newPlayers;
+    });
   };
 
   const handleSortBySuit = () => {
-    // Allow sorting at any time for card organization
-    setPlayers((prev) =>
-      prev.map((player) => {
-        if (player.id === "player1" && player.cards) {
-          return {
-            ...player,
-            cards: sortCardsBySuit(player.cards),
-          };
-        }
-        return player;
-      })
-    );
-  };
+    setPlayers((prev) => {
+      const newPlayers = [...prev];
+      const userPlayer = newPlayers[0];
 
-  const handleCardMove = (fromIndex: number, toIndex: number) => {
-    // Allow drag-and-drop organization at any time
-    setPlayers((prev) =>
-      prev.map((player) => {
-        if (player.id === "player1" && player.cards) {
-          return {
-            ...player,
-            cards: moveCard(player.cards, fromIndex, toIndex),
-          };
-        }
-        return player;
-      })
-    );
-  };
-
-  // AI logic for computer players
-  const handleAITurn = async () => {
-    if (isCurrentPlayerActive || !currentPlayer || gamePhase !== "playing")
-      return;
-
-    // Simulate AI thinking time
-    setTimeout(async () => {
-      try {
-        // Get AI player's cards
-        const aiCards = await getPlayerHand(
-          deckId,
-          `player${currentPlayerIndex + 1}`
-        );
-
-        if (aiCards.length === 0) {
-          // AI has no cards, skip turn
-          setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
-          return;
-        }
-
-        let cardsToPlay: string[] = [];
-
-        // AI logic for first play (must include 3 of Spades)
-        if (isFirstPlay) {
-          const hasThreeOfSpades = aiCards.some((card) => card.code === "3S");
-          if (hasThreeOfSpades) {
-            // Play 3 of Spades with lowest other card if possible
-            cardsToPlay = ["3S"];
-            const otherCards = aiCards.filter((card) => card.code !== "3S");
-            if (otherCards.length > 0) {
-              // Add the lowest card to make a pair or just play together
-              cardsToPlay.push(otherCards[0].code);
-            }
-          }
-        } else {
-          // Normal AI play - just play the lowest card for simplicity
-          cardsToPlay = [aiCards[0].code];
-        }
-
-        if (cardsToPlay.length > 0) {
-          // Play cards to table via API
-          await playCardsToTable(
-            deckId,
-            `player${currentPlayerIndex + 1}`,
-            cardsToPlay
-          );
-
-          // Update last played cards for UI
-          const playedCards = cardsToPlay
-            .map((code) => {
-              const card = aiCards.find((c) => c.code === code);
-              return card ? convertCardsToLocal([card])[0] : null;
-            })
-            .filter(Boolean) as LocalCard[];
-
-          setLastPlayedCards(playedCards);
-          setLastPlayer(currentPlayer.name);
-
-          // Update AI player's card count
-          setPlayers((prev) =>
-            prev.map((player, index) => {
-              if (index === currentPlayerIndex) {
-                const newCardCount = player.cardCount - cardsToPlay.length;
-                return {
-                  ...player,
-                  cardCount: newCardCount,
-                  hasFinished: newCardCount === 0,
-                };
-              }
-              return player;
-            })
-          );
-
-          // Mark first play as complete
-          if (isFirstPlay) {
-            setIsFirstPlay(false);
-            setMustPlayThreeOfSpades(false);
-          }
-        }
-
-        // Move to next player
-        setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
-      } catch (error) {
-        console.error("AI turn error:", error);
-        // Skip AI turn on error
-        setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
+      if (userPlayer.cards) {
+        newPlayers[0] = {
+          ...userPlayer,
+          cards: sortCardsBySuit(userPlayer.cards),
+        };
       }
-    }, 1000 + Math.random() * 2000); // Random delay between 1-3 seconds
+
+      return newPlayers;
+    });
+  };
+
+  // AI turn handler
+  const handleAITurn = async () => {
+    if (isCurrentPlayerActive || !deckId) return;
+
+    console.log("🤖 AI turn for:", currentPlayer.name);
+
+    // Simulate AI decision (pass for now)
+    setTimeout(() => {
+      setCurrentPlayerIndex((prev) => (prev + 1) % 4);
+    }, 1000);
   };
 
   // Trigger AI turns
@@ -462,28 +351,23 @@ export function GameBoard({ className }: GameBoardProps) {
   const canPlay = selectedCards.length > 0 && isCurrentPlayerActive;
   const canPass = isCurrentPlayerActive;
 
-  // Debug logging
-  console.log("GameBoard render - cards for user:", players[0]?.cards?.length);
-  console.log("GameBoard render - selectedCards:", selectedCards.length);
-  console.log("GameBoard render - gamePhase:", gamePhase);
-  console.log(
-    "GameBoard render - isCurrentPlayerActive:",
-    isCurrentPlayerActive
-  );
-
-  // Show loading or error states
   if (isLoading) {
     return (
       <div
         className={cn(
-          "w-full h-screen table-felt relative overflow-hidden flex items-center justify-center",
+          "flex items-center justify-center min-h-screen",
           className
         )}
       >
-        <div className="bg-white shadow-lg p-8 rounded-lg text-center">
-          <div className="mb-4 text-2xl">🃏</div>
-          <div className="mb-2 font-semibold text-lg">Shuffling Deck...</div>
-          <div className="text-gray-600 text-sm">Dealing cards to players</div>
+        <div className="text-center">
+          <div className="border-primary border-b-2 rounded-full w-32 h-32 animate-spin"></div>
+          <p className="mt-4 text-lg">Initializing game...</p>
+          <button 
+            onClick={initializeGame} 
+            className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Force Initialize
+          </button>
         </div>
       </div>
     );
@@ -493,17 +377,15 @@ export function GameBoard({ className }: GameBoardProps) {
     return (
       <div
         className={cn(
-          "w-full h-screen table-felt relative overflow-hidden flex items-center justify-center",
+          "flex items-center justify-center min-h-screen",
           className
         )}
       >
-        <div className="bg-white shadow-lg p-8 rounded-lg text-center">
-          <div className="mb-4 text-2xl">❌</div>
-          <div className="mb-2 font-semibold text-lg text-red-600">Error</div>
-          <div className="mb-4 text-gray-600 text-sm">{error}</div>
+        <div className="text-center">
+          <p className="mb-4 text-lg text-red-500">{error}</p>
           <button
             onClick={startNewGame}
-            className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded text-white"
+            className="bg-primary hover:bg-primary/90 px-4 py-2 rounded text-white"
           >
             Try Again
           </button>
@@ -515,19 +397,38 @@ export function GameBoard({ className }: GameBoardProps) {
   return (
     <div
       className={cn(
-        "w-full h-screen table-felt relative overflow-hidden",
+        "relative w-full h-screen bg-green-800 overflow-hidden",
         className
       )}
     >
+      {/* Game status */}
+      <GameStatus
+        players={players}
+        gamePhase={gamePhase}
+        onNewGame={startNewGame}
+      />
+
+      {/* Game table */}
+      <GameTable
+        lastPlayedCards={lastPlayedCards}
+        lastPlayer={lastPlayer}
+        currentPlayer={currentPlayer?.name || ""}
+        gamePhase={gamePhase}
+      />
+
       {/* Top player */}
       <div className="top-4 left-1/2 absolute transform -translate-x-1/2">
         <PlayerHand
           cards={[]}
           selectedCards={[]}
           onCardClick={() => {}}
+          onCardMove={() => {}}
+          onSortByValue={() => {}}
+          onSortBySuit={() => {}}
+          isCurrentPlayer={currentPlayerIndex === 2}
           position="top"
-          playerName={players[2]?.name || "Player 3"}
-          cardCount={players[2]?.cardCount || 0}
+          playerName={players[2]?.name || "Bob"}
+          cardCount={players[2]?.cardCount}
         />
       </div>
 
@@ -537,9 +438,13 @@ export function GameBoard({ className }: GameBoardProps) {
           cards={[]}
           selectedCards={[]}
           onCardClick={() => {}}
+          onCardMove={() => {}}
+          onSortByValue={() => {}}
+          onSortBySuit={() => {}}
+          isCurrentPlayer={currentPlayerIndex === 1}
           position="left"
-          playerName={players[3]?.name || "Player 4"}
-          cardCount={players[3]?.cardCount || 0}
+          playerName={players[1]?.name || "Alice"}
+          cardCount={players[1]?.cardCount}
         />
       </div>
 
@@ -549,31 +454,13 @@ export function GameBoard({ className }: GameBoardProps) {
           cards={[]}
           selectedCards={[]}
           onCardClick={() => {}}
+          onCardMove={() => {}}
+          onSortByValue={() => {}}
+          onSortBySuit={() => {}}
+          isCurrentPlayer={currentPlayerIndex === 3}
           position="right"
-          playerName={players[1]?.name || "Player 2"}
-          cardCount={players[1]?.cardCount || 0}
-        />
-      </div>
-
-      {/* Center game table */}
-      <div className="top-1/2 left-1/2 absolute transform -translate-x-1/2 -translate-y-1/2">
-        <GameTable
-          lastPlayedCards={lastPlayedCards}
-          lastPlayer={lastPlayer}
-          currentPlayer={currentPlayer?.name || ""}
-          gamePhase={gamePhase}
-        />
-      </div>
-
-      {/* Game status - top right */}
-      <div className="top-4 right-4 absolute w-64">
-        <GameStatus
-          players={players}
-          gamePhase={gamePhase}
-          winner={players.find((p) => p.hasFinished)?.name}
-          onNewGame={() => {
-            startNewGame();
-          }}
+          playerName={players[3]?.name || "Charlie"}
+          cardCount={players[3]?.cardCount}
         />
       </div>
 
