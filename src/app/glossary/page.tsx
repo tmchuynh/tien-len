@@ -440,7 +440,7 @@ export default function Glossary() {
               📖 Back to Rules
             </Button>
           </Link>
-          <Link href="/play">
+          <Link href="/game">
             <Button variant="winner" size="lg" className="px-8 py-4 text-lg">
               🎮 Start Playing
             </Button>
