@@ -135,7 +135,7 @@ export function PlayerHand({
                     />
                     {shouldHighlight && (
                       <div className="-top-15 left-1/2 absolute bg-yellow-400 px-2 py-1 rounded-full font-bold text-black text-xs transform -translate-x-1/2 animate-bounce">
-                        PLAY ME!
+                        INCLUDE ME!
                       </div>
                     )}
                   </div>
