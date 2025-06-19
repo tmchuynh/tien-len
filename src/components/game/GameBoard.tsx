@@ -1,6 +1,7 @@
 "use client";
 
 import { LocalCard } from "@/lib/interfaces/cards";
+import { Player } from "@/lib/interfaces/player";
 import { cn } from "@/lib/utils";
 import {
   moveCard,
@@ -12,7 +13,6 @@ import { GameControls } from "./GameControls";
 import { GameStatus } from "./GameStatus";
 import { GameTable } from "./GameTable";
 import { PlayerHand } from "./PlayerHand";
-import { Player } from "@/lib/interfaces/player";
 
 interface GameBoardProps {
   className?: string;
@@ -292,19 +292,17 @@ export function GameBoard({ className }: GameBoardProps) {
       </div>
 
       {/* Game controls */}
-      <div className="bottom-4 left-1/2 absolute transform -translate-x-1/2">
-        <GameControls
-          selectedCards={selectedCards}
-          onPlay={handlePlay}
-          onPass={handlePass}
-          onClearSelection={handleClearSelection}
-          onSortByValue={handleSortByValue}
-          onSortBySuit={handleSortBySuit}
-          canPlay={canPlay}
-          canPass={canPass}
-          isCurrentPlayer={isCurrentPlayerActive}
-        />
-      </div>
+      <GameControls
+        selectedCards={selectedCards}
+        onPlay={handlePlay}
+        onPass={handlePass}
+        onClearSelection={handleClearSelection}
+        onSortByValue={handleSortByValue}
+        onSortBySuit={handleSortBySuit}
+        canPlay={canPlay}
+        canPass={canPass}
+        isCurrentPlayer={isCurrentPlayerActive}
+      />
     </div>
   );
 }
