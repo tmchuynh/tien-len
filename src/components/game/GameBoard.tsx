@@ -8,6 +8,13 @@ import {
   sortCardsBySuit,
   sortCardsByValue,
 } from "@/lib/utils/cardSorting";
+import { convertCardsToLocal } from "@/lib/utils/cards";
+import { 
+  createTienLenDeck, 
+  dealTienLenHands, 
+  getPlayerHand,
+  playCardsToTable 
+} from "@/api/cards";
 import { useEffect, useState } from "react";
 import { GameControls } from "./GameControls";
 import { GameStatus } from "./GameStatus";
@@ -18,71 +25,126 @@ interface GameBoardProps {
   className?: string;
 }
 
-// Mock data for demonstration
-const createMockPlayers = (): Player[] => [
+// Create initial empty players
+const createInitialPlayers = (): Player[] => [
   {
     id: "player1",
     name: "You",
-    cardCount: 13,
+    cardCount: 0,
     isActive: true,
     hasFinished: false,
-    cards: [
-      { code: "3S", value: "3", suit: "spades" },
-      { code: "5H", value: "5", suit: "hearts" },
-      { code: "7D", value: "7", suit: "diamonds" },
-      { code: "JC", value: "J", suit: "clubs" },
-      { code: "QS", value: "Q", suit: "spades" },
-      { code: "KH", value: "K", suit: "hearts" },
-      { code: "AD", value: "A", suit: "diamonds" },
-      { code: "2C", value: "2", suit: "clubs" },
-      { code: "4S", value: "4", suit: "spades" },
-      { code: "6H", value: "6", suit: "hearts" },
-      { code: "8D", value: "8", suit: "diamonds" },
-      { code: "9C", value: "9", suit: "clubs" },
-      { code: "10S", value: "10", suit: "spades" },
-    ],
+    cards: [],
   },
   {
     id: "player2",
     name: "Alice",
-    cardCount: 12,
+    cardCount: 0,
     isActive: false,
     hasFinished: false,
   },
   {
     id: "player3",
     name: "Bob",
-    cardCount: 11,
+    cardCount: 0,
     isActive: false,
     hasFinished: false,
   },
   {
     id: "player4",
     name: "Charlie",
-    cardCount: 13,
+    cardCount: 0,
     isActive: false,
     hasFinished: false,
   },
 ];
 
-const mockLastPlayedCards: LocalCard[] = [
-  { code: "8H", value: "8", suit: "hearts" },
-  { code: "8D", value: "8", suit: "diamonds" },
-];
+const mockLastPlayedCards: LocalCard[] = [];
 
 export function GameBoard({ className }: GameBoardProps) {
-  const [players, setPlayers] = useState<Player[]>(createMockPlayers());
+  const [players, setPlayers] = useState<Player[]>(createInitialPlayers());
   const [selectedCards, setSelectedCards] = useState<LocalCard[]>([]);
-  const [lastPlayedCards, setLastPlayedCards] =
-    useState<LocalCard[]>(mockLastPlayedCards);
-  const [lastPlayer, setLastPlayer] = useState<string>("Alice");
-  const [gamePhase, setGamePhase] = useState<
-    "waiting" | "playing" | "finished"
-  >("playing");
+  const [lastPlayedCards, setLastPlayedCards] = useState<LocalCard[]>(mockLastPlayedCards);
+  const [lastPlayer, setLastPlayer] = useState<string>("");
+  const [gamePhase, setGamePhase] = useState<"waiting" | "playing" | "finished">("waiting");
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+  const [deckId, setDeckId] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
 
   const currentPlayer = players[currentPlayerIndex];
   const isCurrentPlayerActive = currentPlayer?.id === "player1";
+
+  // Initialize deck and deal cards
+  const initializeGame = async () => {
+    setIsLoading(true);
+    setError("");
+    
+    try {
+      // Create a new shuffled Tien Len deck
+      const deck = await createTienLenDeck();
+      
+      if (!deck.success) {
+        throw new Error("Failed to create deck");
+      }
+      
+      setDeckId(deck.deck_id);
+      
+      // Deal cards to all players
+      const dealResult = await dealTienLenHands(deck.deck_id, 4);
+      
+      if (!dealResult.success) {
+        throw new Error("Failed to deal cards");
+      }
+      
+      // Get current player's cards
+      const playerCards = await getPlayerHand(deck.deck_id, "player1");
+      const localCards = convertCardsToLocal(playerCards);
+      
+      // Update players with card counts and current player's actual cards
+      const updatedPlayers = players.map((player, index) => {
+        const playerKey = `player${index + 1}`;
+        const handData = dealResult.hands[playerKey];
+        
+        return {
+          ...player,
+          cardCount: handData?.cards?.length || 13,
+          cards: player.id === "player1" ? localCards : undefined,
+        };
+      });
+      
+      setPlayers(updatedPlayers);
+      setGamePhase("playing");
+      
+      // Find player with 3 of Spades to start
+      const hasThreeOfSpades = localCards.some(card => card.code === "3S");
+      if (hasThreeOfSpades) {
+        setCurrentPlayerIndex(0); // Current player starts
+      }
+      
+    } catch (error) {
+      console.error("Error initializing game:", error);
+      setError("Failed to initialize game. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Start new game
+  const startNewGame = async () => {
+    setPlayers(createInitialPlayers());
+    setSelectedCards([]);
+    setLastPlayedCards([]);
+    setLastPlayer("");
+    setGamePhase("waiting");
+    setCurrentPlayerIndex(0);
+    setDeckId("");
+    await initializeGame();
+  };
+
+  // Initialize game on component mount
+  useEffect(() => {
+    initializeGame();
+  }, []);
 
   const handleCardClick = (card: LocalCard) => {
     if (!isCurrentPlayerActive) return;
@@ -97,38 +159,47 @@ export function GameBoard({ className }: GameBoardProps) {
     });
   };
 
-  const handlePlay = () => {
-    if (!isCurrentPlayerActive || selectedCards.length === 0) return;
+  const handlePlay = async () => {
+    if (!isCurrentPlayerActive || selectedCards.length === 0 || !deckId) return;
 
-    // Move selected cards to center
-    setLastPlayedCards([...selectedCards]);
-    setLastPlayer(currentPlayer.name);
+    try {
+      // Play cards to table via API
+      const cardCodes = selectedCards.map(card => card.code);
+      await playCardsToTable(deckId, "player1", cardCodes);
 
-    // Remove cards from player's hand
-    setPlayers((prev) =>
-      prev.map((player) => {
-        if (player.id === "player1") {
-          const remainingCards =
-            player.cards?.filter(
-              (card) =>
-                !selectedCards.some((selected) => selected.code === card.code)
-            ) || [];
-          return {
-            ...player,
-            cards: remainingCards,
-            cardCount: remainingCards.length,
-            hasFinished: remainingCards.length === 0,
-          };
-        }
-        return player;
-      })
-    );
+      // Move selected cards to center (for UI)
+      setLastPlayedCards([...selectedCards]);
+      setLastPlayer(currentPlayer.name);
 
-    // Clear selection
-    setSelectedCards([]);
+      // Remove cards from player's hand locally
+      setPlayers((prev) =>
+        prev.map((player) => {
+          if (player.id === "player1") {
+            const remainingCards =
+              player.cards?.filter(
+                (card) =>
+                  !selectedCards.some((selected) => selected.code === card.code)
+              ) || [];
+            return {
+              ...player,
+              cards: remainingCards,
+              cardCount: remainingCards.length,
+              hasFinished: remainingCards.length === 0,
+            };
+          }
+          return player;
+        })
+      );
 
-    // Move to next player
-    setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
+      // Clear selection
+      setSelectedCards([]);
+
+      // Move to next player
+      setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
+    } catch (error) {
+      console.error("Error playing cards:", error);
+      setError("Failed to play cards. Please try again.");
+    }
   };
 
   const handlePass = () => {
@@ -207,6 +278,37 @@ export function GameBoard({ className }: GameBoardProps) {
   const canPlay = selectedCards.length > 0 && isCurrentPlayerActive;
   const canPass = isCurrentPlayerActive;
 
+  // Show loading or error states
+  if (isLoading) {
+    return (
+      <div className={cn("w-full h-screen table-felt relative overflow-hidden flex items-center justify-center", className)}>
+        <div className="bg-white rounded-lg p-8 text-center shadow-lg">
+          <div className="text-2xl mb-4">🃏</div>
+          <div className="text-lg font-semibold mb-2">Shuffling Deck...</div>
+          <div className="text-sm text-gray-600">Dealing cards to players</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={cn("w-full h-screen table-felt relative overflow-hidden flex items-center justify-center", className)}>
+        <div className="bg-white rounded-lg p-8 text-center shadow-lg">
+          <div className="text-2xl mb-4">❌</div>
+          <div className="text-lg font-semibold mb-2 text-red-600">Error</div>
+          <div className="text-sm text-gray-600 mb-4">{error}</div>
+          <button 
+            onClick={startNewGame}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -267,13 +369,7 @@ export function GameBoard({ className }: GameBoardProps) {
           gamePhase={gamePhase}
           winner={players.find((p) => p.hasFinished)?.name}
           onNewGame={() => {
-            // Reset game state
-            setPlayers(createMockPlayers());
-            setSelectedCards([]);
-            setLastPlayedCards([]);
-            setLastPlayer("");
-            setGamePhase("playing");
-            setCurrentPlayerIndex(0);
+            startNewGame();
           }}
         />
       </div>
