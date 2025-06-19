@@ -29,7 +29,7 @@ export function GameControls({
     return (
       <div
         className={cn(
-          "flex justify-center items-center bg-muted p-4 h-full",
+          "flex justify-center items-center bg-muted p-4",
           className
         )}
       >
